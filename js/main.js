@@ -149,7 +149,7 @@ chrome.storage.sync.get(['animeTrackList'],function(data) {
             countTrackList++;
         }
     }
-    $('.loginLink .loginLinkZ').before('<a class="loginLinkZ trackedAnimeHead" title="Количество отслеживаемых аниме: ' + countTrackList + '" href="http://animevost.org/tracked">Отслеживаемые (' + countTrackList + ')</a>');
+    $('.loginLink .loginLinkZ').after('<a class="loginLinkZ trackedAnimeHead" title="Количество отслеживаемых аниме: ' + countTrackList + '" href="http://animevost.org/tracked">Отслеживаемые (' + countTrackList + ')</a>');
     var elemsCount = $('.shortstoryHead a.shortstoryShare img').length;
     var indexElemsCount = 0;
     $('.shortstoryHead a.shortstoryShare img').each(function() {
