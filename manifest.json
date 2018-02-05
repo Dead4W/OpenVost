@@ -1,0 +1,28 @@
+{
+   "name": "Open AnimeVostorg",
+   "short_name": "openvost",
+   "manifest_version": 2,
+   "author": "Ilya Zedgenizov",
+   "content_scripts": [
+   {
+      "css": [ "css/main.css" ],
+	  "js": [ "js/jQuery.min.js", "js/main.js" ],
+	  "run_at": "document_end",
+      "matches": [ "http://animevost.org/*" ]
+   }],
+   "background": {
+      "scripts": [ "js/background.js" ]
+   },
+   "description": "Открывает дополнительные функций на сайте AnimeVost.org",
+   "homepage_url": "https://vk.com/id167819261",
+   "icons": {
+      "32": "openvost.png",
+      "64": "openvost-64x64.png",
+      "128": "openvost-128x128.png"
+   },
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApWTh/sfNCCYVLmv2jVb/Fd21vIm03vPqy+dD1zU9h6kcUUBSiK0DGDdsJACWdssJOhf7oli+WCj6kY7sNFdtJVkiLG5yXZ0ge68t/MJM4/mPdjKYYF9j/74h9ksNhJL9/vKSX+4roRH5fbd8eJU1ulmKZrTQUHf7nmvJ3S7iXDqK0We8pFn6t3uKJVXXPa1I08mD6lNfWoR4CuwWgCGPqvmrOqy4IgeuIKNjo5yGvFPTaexErcSHbkaOccix3tapvNjA6uI815qycZtdHmGpR5SzQj9s6tA3V7+ASvdj3gdbe7EF21jIZXRjxPDoO0BCyTqo1RkWr0Z8LWcfRhU8bQIDAQAB",
+   "update_url": "https://clients2.google.com/service/update2/crx",
+   "permissions": [ "storage", "notifications", "http://animevost.org/*", "https://api.animevost.org/*" ],
+   "web_accessible_resources" : ["js/inject.js", "img/cne.png", "img/cne_good.png", "lib/sound_push.wav", "js/openAnime.js"],
+   "version": "1.0.82"
+ }
