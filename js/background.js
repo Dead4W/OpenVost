@@ -43,11 +43,6 @@ function checkAnime() {
 
             var animeTrackIndex = getAnimeTrackindex(data.animeTrackList,animeLast.id);
 
-            if( data.animeTrackList[ animeTrackIndex ].hash === "" ) {
-                data.animeTrackList[ animeTrackIndex ].hash = episodesNames.hashCode();
-                continue;
-            }
-
             if( animeTrackIndex !== undefined && data.animeTrackList[ animeTrackIndex ].status && episodesNames.hashCode() !== data.animeTrackList[ animeTrackIndex ].hash ) {
 
                 if( first === false ) {

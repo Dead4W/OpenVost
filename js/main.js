@@ -11,62 +11,55 @@ String.prototype.hashCode = function() {
 
 function bindTrackButton() {
     $('.shortstoryShare.checkNewEpisodeShortstory img').on('mouseover',function() {
-        this.src = $(this).parents('.checkNewEpisodeShortstory').attr('data-status') == "true" ? imgCheckEpisode : imgCheckEpisodeGood;
+        this.src = $(this).parents('.checkNewEpisodeShortstory').attr('data-status') === "true" ? imgCheckEpisode : imgCheckEpisodeGood;
     }).on('mouseout',function() {
-        this.src = $(this).parents('.checkNewEpisodeShortstory').attr('data-status') == "true" ? imgCheckEpisodeGood : imgCheckEpisode;
+        this.src = $(this).parents('.checkNewEpisodeShortstory').attr('data-status') === "true" ? imgCheckEpisodeGood : imgCheckEpisode;
     });
     $('.shortstoryShare.checkNewEpisodeShortstory').on('click',function() {
         var elem = $(this);
         var id = +elem.data('id');
         ShowLoading();
-        $.ajax('https://api.animevost.org/animevost/api/v0.2/GetInfo/' + id).then(function(result) {
-            var episodes = JSON.parse(result.data[0].series.replace(/'/g,'"'));
-            var episodesNames = [];
-            for( name in episodes ) {
-                episodesNames.push(name);
+        chrome.storage.sync.get(['animeTrackList'],function(data) {
+            if(  data.animeTrackList === undefined ) {
+                data.animeTrackList = [];
+                chrome.storage.sync.set({animeTrackList:data.animeTrackList});
             }
-            var hashEpisode = episodesNames.join('-').hashCode();
-            chrome.storage.sync.get(['animeTrackList'],function(data) {
-                if(  data.animeTrackList === undefined ) {
-                    data.animeTrackList = [];
-                    chrome.storage.sync.set({animeTrackList:data.animeTrackList});
-                }
-                if( elem.attr('data-status') === "true" ) {
-                    for( var i=0;i<data.animeTrackList.length;i++ ) {
-                        if( data.animeTrackList[i].id === id ) {
-                            data.animeTrackList[i].status = false;
-                        }
-                    }
-                } else {
-                    var success = false;
-                    for( var i=0;i<data.animeTrackList.length;i++ ) {
-                        if( data.animeTrackList[i].id === id ) {
-                            data.animeTrackList[i].status = true;
-                            success = true;
-                            break;
-                        }
-                    }
-                    if( !success ) {
-                        data.animeTrackList.push({
-                            id: id,
-                            hash: hashEpisode,
-                            status: true
-                        });
+            var i;
+            if( elem.attr('data-status') === "true" ) {
+                for( i=0;i<data.animeTrackList.length;i++ ) {
+                    if( data.animeTrackList[i].id === id ) {
+                        data.animeTrackList[i].status = false;
                     }
                 }
+            } else {
+                var success = false;
+                for( i=0;i<data.animeTrackList.length;i++ ) {
+                    if( data.animeTrackList[i].id === id ) {
+                        data.animeTrackList[i].status = true;
+                        success = true;
+                        break;
+                    }
+                }
+                if( !success ) {
+                    data.animeTrackList.push({
+                        id: id,
+                        hash: "",
+                        status: true
+                    });
+                }
+            }
 
-                chrome.storage.sync.set({"animeTrackList":data.animeTrackList},function() {
-                    HideLoading();
-                    var countTrackList = 0;
-                    for( var i=0;i<data.animeTrackList.length;i++ ) {
-                        if( data.animeTrackList[i].status ) {
-                            countTrackList++;
-                        }
+            chrome.storage.sync.set({"animeTrackList":data.animeTrackList},function() {
+                HideLoading();
+                var countTrackList = 0;
+                for( var i=0;i<data.animeTrackList.length;i++ ) {
+                    if( data.animeTrackList[i].status ) {
+                        countTrackList++;
                     }
-                    $('.trackedAnimeHead').attr('title','Количество отслеживаемых аниме: ' + countTrackList).text('Отслеживаемые (' + countTrackList + ')');
-                    elem.find('img').attr('src',elem.attr('data-status') === "true" ? imgCheckEpisode : imgCheckEpisodeGood).attr('title','Отслеживать новые серий');
-                    elem.attr('data-status',elem.attr('data-status') === "true" ? "false" : "true");
-                });
+                }
+                $('.trackedAnimeHead').attr('title','Количество отслеживаемых аниме: ' + countTrackList).text('Отслеживаемые (' + countTrackList + ')');
+                elem.find('img').attr('src',elem.attr('data-status') === "true" ? imgCheckEpisode : imgCheckEpisodeGood).attr('title','Отслеживать новые серий');
+                elem.attr('data-status',elem.attr('data-status') === "true" ? "false" : "true");
             });
         });
     });
@@ -80,6 +73,7 @@ function injectScript(file, node) {
     th.appendChild(s);
 }
 
+//player inject
 if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
     var scriptPlayer;
     if( navigator.userAgent.match(/Opera/i) || navigator.userAgent.match(/Windows Phone/i)  ) {
@@ -92,6 +86,7 @@ if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
     });
 }
 
+//counters format
 $('.staticInfoRightSmotr').each(function() {
     var countViews = $(this);
     countViews.text(new Intl.NumberFormat('ru-RU').format(+countViews.text())).attr('title','Просмотров: ' + countViews.text());
@@ -101,7 +96,6 @@ $('.staticInfoRight span a').each(function() {
     var comments = $(this);
     comments.text(new Intl.NumberFormat('ru-RU').format(+comments.text())).attr('title','Комментариев: ' + comments.text());
 });
-
 $('.staticInfoLeft span.staticInfoLeftData').attr('title','Дата последнего обновления');
 
 function Confirm(msg) {
@@ -111,31 +105,11 @@ function Alert(msg) {
     return alert(msg);
 }
 
-/* hide banner */
-var textBanner = $('.banerTopTwo').html();
-var hashBanner = textBanner.hashCode();
-chrome.storage.sync.get(['lastHashBanner','isBannerHide'],function(data) {
-    if( data.isBannerHide === undefined ) {
-        chrome.storage.sync.set({lastHashBanner:0,isBannerHide:false});
-        data.lastHashBanner = 0;
-        data.isBannerHide = false;
-    }
-    if( hashBanner === data.lastHashBanner && data.isBannerHide ) {
-        $('.banerTopTwo').hide();
-    } else {
-        $('<span class="close" title="Скрыть">X</span>').appendTo('.banerTopTwo').on('click',function() {
-            if( Confirm('Не показывать это объявление в будущем?') ) {
-                $('.banerTopTwo').slideUp();
-                chrome.storage.sync.set({lastHashBanner:hashBanner,isBannerHide:true});
-            }
-        });
-    }
-});
-
+//load functions
 function ShowLoading(a){$("#loading-layer").remove();$("body").append("<div id='loading-layer' style='display:none'></div>");a?$("#loading-layer").html(a):$("#loading-layer").html("Загрузка. Пожалуйста, подождите...");a=($(window).width()-$("#loading-layer").width())/2;var b=($(window).height()-$("#loading-layer").height())/2;$("#loading-layer").css({left:a+"px",top:b+"px",position:"fixed",zIndex:"99"});$("#loading-layer").fadeTo("slow",.6)}
 function HideLoading(a){$("#loading-layer").fadeOut("slow",function(){$("#loading-layer").remove()})}
 
-/* check new episodes icon */
+/* added icon for tracked anime */
 var imgCheckEpisode = chrome.extension.getURL('img/cne.png');
 var imgCheckEpisodeGood = chrome.extension.getURL('img/cne_good.png');
 chrome.storage.sync.get(['animeTrackList'],function(data) {
@@ -170,6 +144,7 @@ chrome.storage.sync.get(['animeTrackList'],function(data) {
     });
 });
 
+//tracked anime list page
 if( trackedPageOffset = location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
     var trackedAnimeOnPage = 10;
     trackedPageOffset = (trackedPageOffset[1] === "" || +trackedPageOffset[1] === 0) ? 1 : +trackedPageOffset[1];
@@ -258,4 +233,28 @@ if( trackedPageOffset = location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
     });
 }
 
+/* hide info banner */
+var $textBanner = $('.banerTopTwo');
+if( $textBanner.length ) {
+    var hashBanner = $textBanner.html().hashCode();
+    chrome.storage.sync.get(['lastHashBanner','isBannerHide'],function(data) {
+        if( data.isBannerHide === undefined ) {
+            chrome.storage.sync.set({lastHashBanner:0,isBannerHide:false});
+            data.lastHashBanner = 0;
+            data.isBannerHide = false;
+        }
+        if( hashBanner === data.lastHashBanner && data.isBannerHide ) {
+            $('.banerTopTwo').hide();
+        } else {
+            $('<span class="close" title="Скрыть">X</span>').appendTo('.banerTopTwo').on('click',function() {
+                if( Confirm('Не показывать это объявление в будущем?') ) {
+                    $('.banerTopTwo').slideUp();
+                    chrome.storage.sync.set({lastHashBanner:hashBanner,isBannerHide:true});
+                }
+            });
+        }
+    });
+}
+
+$('#dle-content').attr('data-openvost-cne-good',imgCheckEpisodeGood);
 injectScript( chrome.extension.getURL('/js/inject.js'), 'body');

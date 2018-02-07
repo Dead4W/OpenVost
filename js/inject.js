@@ -1,16 +1,6 @@
-$(document).ready(function() {
-    if( $('#blockRandomPost a').length ) {
-        var randDiv = $('#blockRandomPost a')[0];
-        randDiv.addEventListener('mouseover', function(){
-            window.linkOver(this)
-        });
-        randDiv.addEventListener('mouseout', function(){
-            window.linkOut(this)
-        });
-    }
-});
-
 if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
+    var imgCheckEpisodeGood = $('#dle-content').attr('data-openvost-cne-good');
+
     document.addEventListener('openvost-info-animelist',function() {
         String.prototype.hashCode = function() {
             var hash = 0, i, chr;
@@ -24,7 +14,7 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
         };
         function constructAnimeTrackedElement(animelist,index) {
             var id = animelist[index];
-            $.ajax('https://api.animevost.org/animevost/api/v0.2/GetInfo/' + id).then(function(result) {
+            $.post('https://api.animevost.org/v1/info',{id:id}).success(function(result) {
                 var title = result.data[0].title;
                 var description = result.data[0].description;
                 var year = result.data[0].year;
@@ -36,7 +26,7 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
 
                 var element = '<div class="shortstory">\n' +
                     '        <div class="shortstoryHead">\n' +
-                    '        <a class="shortstoryShare checkNewEpisodeShortstory" style="right:5px;" data-status="true" data-id="' + id + '"><img class="checkNewEpisode" title="Отслеживать новые серий" src="chrome-extension://ooeealgadmhdnhebkhhbbcmckehpomcj/img/cne_good.png"></a>\n' +
+                    '        <a class="shortstoryShare checkNewEpisodeShortstory" style="right:5px;" data-status="true" data-id="' + id + '"><img class="checkNewEpisode" title="Отслеживать новые серий" src="' + imgCheckEpisodeGood + '"></a>\n' +
                     '    <h2>\n' +
                     '    <a href="' + animePage + '">' + title + '</a>\n' +
                     '    </h2>\n' +
@@ -79,6 +69,8 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                     evObj.initEvent('openvost-animetracklist-done', true, true);
                     document.dispatchEvent(evObj);
                 }
+            }).fail(function() {
+                throw new Error('Open vost api error');
             });
         }
         var animelist = JSON.parse($("#dle-content").attr("data-anime-list"));
@@ -89,3 +81,15 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
 var evObj = document.createEvent('Events');
 evObj.initEvent('openvost-inject', true, true);
 document.dispatchEvent(evObj);
+
+$(document).ready(function() {
+    if( $('#blockRandomPost a').length ) {
+        var randDiv = $('#blockRandomPost a')[0];
+        randDiv.addEventListener('mouseover', function(){
+            window.linkOver(this)
+        });
+        randDiv.addEventListener('mouseout', function(){
+            window.linkOut(this)
+        });
+    }
+});
