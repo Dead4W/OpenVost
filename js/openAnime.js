@@ -90,6 +90,13 @@ function open_vost_kino(id,snum,autoplay,startPlayTime) {
 }
 */
 
+$.post('https://api.animevost.org/v1/info',{id:dle_news_id}).success(function(result) {
+    var rating = (result.data[0].rating / result.data[0].votes * 20).toFixed(1);
+
+    $('.current-rating').text(rating).get(0).style.width = rating + '%';
+    $('#vote-num-id-' + dle_news_id).parent().html('(<span id="vote-num-id-' + dle_news_id + '">' + rating + '</span>)');
+});
+
 var startPlayTime = Math.floor($.cookie("time" + window.location.pathname));
 if(startPlayTime === undefined) {
     startPlayTime = 0;
@@ -97,8 +104,8 @@ if(startPlayTime === undefined) {
 
 var $elems = $("#scrolltwo #items .epizode");
 var count = $elems.length;
-var player = false;
-//var kinoPlayer = false;
+player = false;
+//kinoPlayer = false;
 
 //set event
 $elems.each(function() {
@@ -167,6 +174,21 @@ $(".functionPanel div").css('width','25%').first().before("<a href=\"#download\"
     $('.downloadEpisode').attr('href',href).attr('download','');
 });
  */
+
+//save video frame button
+$(".functionPanel div").css('width','25%').first().before("<a href=\"#download\" class=\"downloadEpisode fastPunkt\">Сохранить момент</a>").parent().find('.downloadEpisode').css({
+    "display": "block",
+    "cursor": "pointer",
+    "width": "170px"
+}).on('click',function() {
+    if( !player || !player.Duration() ) {
+        return false;
+    }
+    var name = $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'_') + $('.epizode.active').text().replace(' серия','ep');
+
+    var href = player.Get(['file']).substr(0,player.Get(['file']).indexOf("|")) + '?openvost_savemoment=' + encodeURI(player.currentTime()) + '&name=' + encodeURI(name);
+    window.open(href,'save moment window',"width=200,height=200");
+});
 
 /*
 $('#kinoon').on('click',function() {
