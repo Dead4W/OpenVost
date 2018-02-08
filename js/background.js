@@ -41,6 +41,10 @@ function checkAnime() {
             }
             episodesNames = episodesNames.join('-');
 
+            if( data.animeTrackList[ animeTrackIndex ].hash === "" ) {
+                data.animeTrackList[ animeTrackIndex ].hash = episodesNames.hashCode();
+            }
+
             var animeTrackIndex = getAnimeTrackindex(data.animeTrackList,animeLast.id);
 
             if( animeTrackIndex !== undefined && data.animeTrackList[ animeTrackIndex ].status && episodesNames.hashCode() !== data.animeTrackList[ animeTrackIndex ].hash ) {

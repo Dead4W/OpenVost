@@ -23,6 +23,7 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                 var onlyTitle = title.match(/([^\[]+)/)[1];
                 var poster = result.data[0].urlImagePreview.match(/^http/) ? result.data[0].urlImagePreview : "http://animevost.org" + result.data[0].urlImagePreview;
                 var animePage = "http://animevost.org/" + id + "-openvost-redirect.html";
+                var rating = (result.data[0].rating / result.data[0].votes * 20).toFixed(1);
 
                 var element = '<div class="shortstory">\n' +
                     '        <div class="shortstoryHead">\n' +
@@ -45,9 +46,18 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                     '        <p><strong>Год выхода: </strong>' + year + '</p>\n' +
                     '    <p><strong>Жанр: </strong>' + genre + '</p>\n' +
                     '    <p><strong>Тип: </strong>' + type + '</p>\n' +
-                    '\n' +
-                    '\n' +
-                    '    <p><strong>Описание: ' + description + '</strong></p>\n' +
+                    '<p><strong>Режиссёр: </strong><span itemprop="director"><a href="/xfsearch/' + encodeURIComponent(result.data[0].director) + '/">' + result.data[0].director + '</a></span></p>' +
+                    '<div><strong>Рейтинг: </strong><div class="ratingIn" id="ratig-layer-' + id + '"><div class="rating">\n' +
+                    '<ul class="unit-rating">\n' +
+                    '<li class="current-rating" style="width:' + rating + '%;">' + rating + '</li>\n' +
+                    '<li><a href="#" title="Плохо" class="r1-unit" onclick="doRate(\'1\', \'' + id + '\'); return false;">1</a></li>\n' +
+                    '<li><a href="#" title="Приемлемо" class="r2-unit" onclick="doRate(\'2\', \'' + id + '\'); return false;">2</a></li>\n' +
+                    '<li><a href="#" title="Средне" class="r3-unit" onclick="doRate(\'3\', \'' + id + '\'); return false;">3</a></li>\n' +
+                    '<li><a href="#" title="Хорошо" class="r4-unit" onclick="doRate(\'4\', \'' + id + '\'); return false;">4</a></li>\n' +
+                    '<li><a href="#" title="Отлично" class="r5-unit" onclick="doRate(\'5\', \'' + id + '\'); return false;">5</a></li>\n' +
+                    '</ul>\n' +
+                    '</div></div>&nbsp;<span style="font-size:11px; color:#000;">(<span id="vote-num-id-' + id + '">' + rating + '</span>)</span></div>' +
+                    '    <p><strong>Описание: </strong><span itemprop="description">' + description + '</span></p>\n' +
                     '    </td>\n' +
                     '    </tr>\n' +
                     '    </tbody>\n' +
@@ -65,6 +75,15 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                         constructAnimeTrackedElement(animelist,index+1);
                     },100);
                 } else {
+                    $("#dle-content").append('<div class="block_2">\n' +
+                        '<table width="100%" border="0" cellspacing="0" cellpadding="0">\n' +
+                        '<tbody><tr>\n' +
+                        '<td class="block_3"></td>\n' +
+                        '<td class="block_4"></td>\n' +
+                        '<td class="block_5"></td>\n' +
+                        '</tr>\n' +
+                        '</tbody></table>\n' +
+                        '</div>');
                     var evObj = document.createEvent('Events');
                     evObj.initEvent('openvost-animetracklist-done', true, true);
                     document.dispatchEvent(evObj);
@@ -74,13 +93,11 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
             });
         }
         var animelist = JSON.parse($("#dle-content").attr("data-anime-list"));
-        constructAnimeTrackedElement(animelist,0);
+        if( animelist.length ) {
+            constructAnimeTrackedElement(animelist,0);
+        }
     });
 }
-
-var evObj = document.createEvent('Events');
-evObj.initEvent('openvost-inject', true, true);
-document.dispatchEvent(evObj);
 
 $(document).ready(function() {
     if( $('#blockRandomPost a').length ) {
@@ -93,3 +110,7 @@ $(document).ready(function() {
         });
     }
 });
+
+var evObj = document.createEvent('Events');
+evObj.initEvent('openvost-inject', true, true);
+document.dispatchEvent(evObj);

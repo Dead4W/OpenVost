@@ -6,7 +6,7 @@
    "content_scripts": [
    {
       "css": [ "css/main.css" ],
-	  "js": [ "js/jQuery.min.js", "js/main.js" ],
+	  "js": [ "js/main.js" ],
 	  "run_at": "document_end",
       "matches": [ "http://animevost.org/*" ]
    }],
