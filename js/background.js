@@ -39,33 +39,32 @@ function checkAnime() {
             for( name in episodes ) {
                 episodesNames.push(name);
             }
-            episodesNames = episodesNames.join('-');
-
-            if( data.animeTrackList[ animeTrackIndex ].hash === "" ) {
-                data.animeTrackList[ animeTrackIndex ].hash = episodesNames.hashCode();
-            }
+            episodesNames = episodesNames.join('-').replace(/\s+/g,'');
 
             var animeTrackIndex = getAnimeTrackindex(data.animeTrackList,animeLast.id);
+            if( animeTrackIndex === undefined ) continue;
 
             if( animeTrackIndex !== undefined && data.animeTrackList[ animeTrackIndex ].status && episodesNames.hashCode() !== data.animeTrackList[ animeTrackIndex ].hash ) {
 
+                var notification;
+
                 if( first === false ) {
-                    var notification = new Notification("Залит новый эпизод", {
+                    notification = new Notification("Залит новый эпизод", {
                         body: "На странице " + animeLast.title,
                         icon: animeLast.urlImagePreview.match(/^http/) ? animeLast.urlImagePreview : "http://animevost.org" + animeLast.urlImagePreview,
                     }).onclick = function () {
                         window.open("http://animevost.org/" + animeLast.id + "-openvost-redirect.html");
-                        notification.close();
+                        this.close();
                     };
 
                     audio.play();
                 } else if( first === true ) {
-                    var notification = new Notification("Похоже, вышло пару серий, пока вас не было", {
+                    notification = new Notification("Похоже, вышло пару серий, пока вас не было", {
                         body: "В последнее время был залит новый эпизод",
                         icon: animeLast.urlImagePreview.match(/^http/) ? animeLast.urlImagePreview : "http://animevost.org" + animeLast.urlImagePreview,
                     }).onclick = function () {
                         window.open("http://animevost.org/tracked/");
-                        notification.close();
+                        this.close();
                     };
 
                     audio.play();

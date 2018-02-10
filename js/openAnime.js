@@ -49,11 +49,8 @@ function open_vost(id,snum,autoplay,startPlayTime) {
             start: startPlayTime ? startPlayTime : 0
         });
     }
-
-    player.Set('repeat',1);
 }
 
-/*
 function open_vost_kino(id,snum,autoplay,startPlayTime) {
     var num = snum - 2;
     if (num < 0) {
@@ -65,36 +62,43 @@ function open_vost_kino(id,snum,autoplay,startPlayTime) {
     });
     $("#" + snum).addClass('kactive');
 
-    $.cookie(window.location.pathname, snum, {
-        expires: 365
-    });
-    $.cookie("time" + window.location.pathname, 0, {
-        expires: 365
-    });
+    if( !startPlayTime || autoplay  ) {
+        $.cookie(window.location.pathname, snum, {
+            expires: 365
+        });
+        $.cookie("time" + window.location.pathname, 0, {
+            expires: 365
+        });
+    }
+
+    var videolinks = "http://new.aniland.org/720/" + id + ".mp4|http://new.aniland.org/" + id + ".mp4|http://tk.aniland.org/" + id + ".mp4|http://fast.aniland.org/" + id + ".mp4|http://mp4.aniland.org/" + id + ".mp4";
+    var poster = "http://media.aniland.org/img/" + id + ".jpg";
 
     if( kinoPlayer ) {
-        kinoPlayer.Set("file","http://tk.aniland.org/" + id + ".mp4|http://fast.aniland.org/" + id + ".mp4|http://mp4.aniland.org/" + id + ".mp4");
-        kinoPlayer.Set("poster","http://media.aniland.org/img/" + id + ".jpg");
-        kinoPlayer.Set("start","0");
-        kinoPlayer.Stop();
+        kinoPlayer.Set("poster",poster);
+        if( autoplay ) {
+            kinoPlayer.Play(videolinks);
+        } else {
+            kinoPlayer.Set("file",videolinks);
+            kinoPlayer.Stop();
+        }
     } else {
         kinoPlayer = new Uppod({
             m: "video",
-            st: "",
+            st: st.default,
             uid: "player",
-            file: "http://tk.aniland.org/" + id + ".mp4|http://fast.aniland.org/" + id + ".mp4|http://mp4.aniland.org/" + id + ".mp4",
-            poster: "http://media.aniland.org/img/" + id + ".jpg",
+            file: videolinks,
+            poster: poster,
             h: "559"
         });
     }
 }
-*/
 
 $.post('https://api.animevost.org/v1/info',{id:dle_news_id}).success(function(result) {
-    var rating = (result.data[0].rating / result.data[0].votes * 20).toFixed(1);
+    var rating = (result.data[0].rating / result.data[0].votes * 2).toFixed(1);
 
-    $('.current-rating').text(rating).get(0).style.width = rating + '%';
-    $('#vote-num-id-' + dle_news_id).parent().html('(<span id="vote-num-id-' + dle_news_id + '">' + rating + '</span>)');
+    $('.current-rating').text(rating).get(0).style.width = rating*10 + '%';
+    $('#vote-num-id-' + dle_news_id).parent().html('(<span id="vote-num-id-' + dle_news_id + '">' + rating + '/10</span>)');
 });
 
 var startPlayTime = Math.floor($.cookie("time" + window.location.pathname));
@@ -105,7 +109,29 @@ if(startPlayTime === undefined) {
 var $elems = $("#scrolltwo #items .epizode");
 var count = $elems.length;
 player = false;
-//kinoPlayer = false;
+kinoPlayer = false;
+var activePlayer = 'player2';
+
+function playerActive(e) {
+    if( activePlayer !== e.target.id ) {
+        activePlayer = e.target.id;
+        var snum;
+        if( activePlayer === 'player' ) {
+            player.Pause();
+            $elem = $('.series.kactive');
+        } else if( activePlayer === 'player2' ) {
+            kinoPlayer.Stop();
+            $elem = $('.epizode.active');
+        }
+        snum = +$elem.attr('id').replace(/[^\d+]/g,'');
+        $.cookie(window.location.pathname, snum, {
+            expires: 365
+        });
+    }
+}
+
+document.getElementById('player').addEventListener('play',playerActive);
+document.getElementById('player2').addEventListener('play',playerActive);
 
 //set event
 $elems.each(function() {
@@ -126,23 +152,17 @@ $elems.each(function() {
     //remember time of episode
     if (!--count) {
         setInterval(function() {
-            if( //$("#kinoplayer").css('display') == "none" &&
-                player.getStatus() === 1 && player.Duration() > 0 && player.Duration() - player.currentTime() >= 10 && Math.floor($.cookie("time" + window.location.pathname)) != player.currentTime() ) {
-                $.cookie("time" + window.location.pathname, player.currentTime(), {
+            var currentPlayer = activePlayer === 'player2' ? player : kinoPlayer;
+            if( currentPlayer.getStatus() === 1 && currentPlayer.Duration() > 0 && currentPlayer.Duration() - currentPlayer.currentTime() >= 10 && Math.floor($.cookie("time" + window.location.pathname)) != currentPlayer.currentTime() ) {
+                $.cookie("time" + window.location.pathname, currentPlayer.currentTime(), {
                     expires: 365
                 });
             }
-            /*
-            if( $("#kinoplayer").css('display') == "none" && kinoPlayer) {
-                kinoPlayer.Stop();
-            }
-            */
         },4000)
     }
 });
 
 //set event kino player
-/*
 $elems = $("#list .series");
 $elems.each(function() {
     $elem = $(this);
@@ -150,8 +170,6 @@ $elems.each(function() {
 
     var id = data[0];
     var snum = data[1];
-
-    unbindEpisode(this.id);
 
     this.onclick = function() {
         open_vost_kino(id,snum,false);
@@ -161,19 +179,6 @@ $elems.each(function() {
         open_vost_kino(id,snum,false);
     }
 });
- */
-
-//episode download button
-/*
-$(".functionPanel div").css('width','25%').first().before("<a href=\"#download\" class=\"downloadEpisode fastPunkt\">Скачать серию</a>").parent().find('.downloadEpisode').css({
-    "display": "block",
-    "cursor": "pointer",
-    "width": "170px"
-}).on('click',function() {
-    var href = player.Get(['file']).substr(0,player.Get(['file']).indexOf("|"));
-    $('.downloadEpisode').attr('href',href).attr('download','');
-});
- */
 
 //save video frame button
 $(".functionPanel div").css('width','25%').first().before("<a href=\"#download\" class=\"downloadEpisode fastPunkt\">Сохранить момент</a>").parent().find('.downloadEpisode').css({
@@ -184,41 +189,50 @@ $(".functionPanel div").css('width','25%').first().before("<a href=\"#download\"
     if( !player || !player.Duration() ) {
         return false;
     }
-    var name = $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'_') + $('.epizode.active').text().replace(' серия','ep');
+    var name = $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-') + $('.epizode.active').text().replace(' серия','ep');
 
-    var href = player.Get(['file']).substr(0,player.Get(['file']).indexOf("|")) + '?openvost_savemoment=' + encodeURI(player.currentTime()) + '&name=' + encodeURI(name);
+    var href = $('#player2 video').get(0).currentSrc + '?openvost_savemoment=' + encodeURI(player.currentTime()) + '&name=' + encodeURI(name);
     window.open(href,'save moment window',"width=200,height=200");
 });
 
-/*
 $('#kinoon').on('click',function() {
     if( player ) {
         player.Pause();
     }
 });
-$(document).on('keyup',function(e) {
-    if(e.keyCode===27 && kinoPlayer) {
-        kinoPlayer.Stop();
-    }
-});
- */
 
 //play next when current episode is ended
 document.addEventListener('end', function () {
-    if( $('.mfp-content').length ) {
-        return;
-    }
-    var $elem = $("#scrolltwo #items .epizode.active").next();
-    if( $elem.length ) {
-        var data = $elem.attr('onclick').replace(/ajax2|[\(\);]/g,'').split(',');
+    var $elem,data,id,snum;
+    if( activePlayer === 'player2' ) {
+        $elem = $("#scrolltwo #items .epizode.active").next();
+        if( $elem.length ) {
+            data = $elem.attr('onclick').replace(/ajax2|[\(\);]/g,'').split(',');
 
-        var id = data[0];
-        var snum = data[1];
+            id = data[0];
+            snum = data[1];
 
-        open_vost(id,snum,true,0);
-        return false;
-    } else {
-        player.Set('repeat',0);
-        player.Stop();
+            player.Set('repeat',1);
+            open_vost(id,snum,true,0);
+            return false;
+        } else {
+            player.Set('repeat',0);
+            player.Stop();
+        }
+    } else if( activePlayer === 'player' ) {
+        $elem = $("#list .series.kactive").next();
+        if( $elem.length ) {
+            data = $elem.attr('onclick').replace(/ajax|[\(\);]/g,'').split(',');
+
+            id = data[0];
+            snum = data[1];
+
+            kinoPlayer.Set('repeat',1);
+            open_vost_kino(id,snum,true,0);
+            return false;
+        } else {
+            kinoPlayer.Set('repeat',0);
+            kinoPlayer.Stop();
+        }
     }
 }, false);

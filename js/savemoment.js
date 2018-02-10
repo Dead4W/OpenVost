@@ -62,7 +62,7 @@ if( location.search.match(/\?openvost_savemoment/) ) {
             var data = canvas.toDataURL('image/png');
 
             var a = document.createElement('a');
-            a.setAttribute("download", params.name[0] + "_" + rand_string(4) + ".png");
+            a.setAttribute("download", params.name[0] + "-" + rand_string(4) + ".png");
             a.setAttribute("href", data);
             a.click();
             setTimeout(function() {

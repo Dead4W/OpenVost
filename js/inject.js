@@ -23,7 +23,7 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                 var onlyTitle = title.match(/([^\[]+)/)[1];
                 var poster = result.data[0].urlImagePreview.match(/^http/) ? result.data[0].urlImagePreview : "http://animevost.org" + result.data[0].urlImagePreview;
                 var animePage = "http://animevost.org/" + id + "-openvost-redirect.html";
-                var rating = (result.data[0].rating / result.data[0].votes * 20).toFixed(1);
+                var rating = (result.data[0].rating / result.data[0].votes * 2).toFixed(1);
 
                 var element = '<div class="shortstory">\n' +
                     '        <div class="shortstoryHead">\n' +
@@ -49,14 +49,14 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                     '<p><strong>Режиссёр: </strong><span itemprop="director"><a href="/xfsearch/' + encodeURIComponent(result.data[0].director) + '/">' + result.data[0].director + '</a></span></p>' +
                     '<div><strong>Рейтинг: </strong><div class="ratingIn" id="ratig-layer-' + id + '"><div class="rating">\n' +
                     '<ul class="unit-rating">\n' +
-                    '<li class="current-rating" style="width:' + rating + '%;">' + rating + '</li>\n' +
+                    '<li class="current-rating" style="width:' + rating*10 + '%;">' + rating + '</li>\n' +
                     '<li><a href="#" title="Плохо" class="r1-unit" onclick="doRate(\'1\', \'' + id + '\'); return false;">1</a></li>\n' +
                     '<li><a href="#" title="Приемлемо" class="r2-unit" onclick="doRate(\'2\', \'' + id + '\'); return false;">2</a></li>\n' +
                     '<li><a href="#" title="Средне" class="r3-unit" onclick="doRate(\'3\', \'' + id + '\'); return false;">3</a></li>\n' +
                     '<li><a href="#" title="Хорошо" class="r4-unit" onclick="doRate(\'4\', \'' + id + '\'); return false;">4</a></li>\n' +
                     '<li><a href="#" title="Отлично" class="r5-unit" onclick="doRate(\'5\', \'' + id + '\'); return false;">5</a></li>\n' +
                     '</ul>\n' +
-                    '</div></div>&nbsp;<span style="font-size:11px; color:#000;">(<span id="vote-num-id-' + id + '">' + rating + '</span>)</span></div>' +
+                    '</div></div>&nbsp;<span style="font-size:11px; color:#000;">(<span id="vote-num-id-' + id + '">' + rating + '/10</span>)</span></div>' +
                     '    <p><strong>Описание: </strong><span itemprop="description">' + description + '</span></p>\n' +
                     '    </td>\n' +
                     '    </tr>\n' +
@@ -89,7 +89,7 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                     document.dispatchEvent(evObj);
                 }
             }).fail(function() {
-                throw new Error('Open vost api error');
+                throw new Error('OpenVost api error');
             });
         }
         var animelist = JSON.parse($("#dle-content").attr("data-anime-list"));
@@ -98,18 +98,6 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
         }
     });
 }
-
-$(document).ready(function() {
-    if( $('#blockRandomPost a').length ) {
-        var randDiv = $('#blockRandomPost a')[0];
-        randDiv.addEventListener('mouseover', function(){
-            window.linkOver(this)
-        });
-        randDiv.addEventListener('mouseout', function(){
-            window.linkOut(this)
-        });
-    }
-});
 
 var evObj = document.createEvent('Events');
 evObj.initEvent('openvost-inject', true, true);

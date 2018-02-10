@@ -51,46 +51,65 @@ function bindTrackButton() {
         trackedAnime.onclick = function(e) {
             var elem = e.currentTarget;
             var id = +elem.dataset.id;
-            ShowLoading;
+            ShowLoading();
             chrome.storage.sync.get(['animeTrackList'],function(data) {
                 if(  data.animeTrackList === undefined ) {
                     data.animeTrackList = [];
                     chrome.storage.sync.set({animeTrackList:data.animeTrackList});
                 }
 
-                var success = false;
-                for( var i=0;i<data.animeTrackList.length;i++ ) {
-                    if( data.animeTrackList[i].id === id ) {
-                        data.animeTrackList[i].status = elem.dataset.status === "true" ? false : true;
-                        if( data.animeTrackList[i].status === false ) {
-                            data.animeTrackList.remove(data.animeTrackList[i]);
-                        }
-                        success = true;
-                        break;
-                    }
-                }
-                if( !success && elem.dataset.status === "false" ) {
-                    data.animeTrackList.push({
-                        id: id,
-                        hash: "",
-                        status: true
-                    });
-                }
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", 'https://api.animevost.org/v1/info', true);
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-                chrome.storage.sync.set({"animeTrackList":data.animeTrackList},function() {
-                    HideLoading();
-                    var countTrackList = 0;
-                    for( var i=0;i<data.animeTrackList.length;i++ ) {
-                        if( data.animeTrackList[i].status ) {
-                            countTrackList++;
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+                        var result = JSON.parse(xhr.responseText);
+
+                        var episodes = JSON.parse(result.data[0].series.replace(/'/g,'"'));
+                        var episodesNames = [];
+                        for( name in episodes ) {
+                            episodesNames.push(name);
                         }
+                        episodesNames = episodesNames.join('-').replace(/\s+/g,'');
+
+                        var success = false;
+                        for( var i=0;i<data.animeTrackList.length;i++ ) {
+                            if( data.animeTrackList[i].id === id ) {
+                                data.animeTrackList[i].status = elem.dataset.status === "true" ? false : true;
+                                if( data.animeTrackList[i].status === false ) {
+                                    data.animeTrackList.remove(data.animeTrackList[i]);
+                                } else {
+                                    data.animeTrackList[i].hash = episodesNames.hashCode();
+                                }
+                                success = true;
+                                break;
+                            }
+                        }
+                        if( !success && elem.dataset.status === "false" ) {
+                            data.animeTrackList.push({
+                                id: id,
+                                hash: episodesNames.hashCode(),
+                                status: true
+                            });
+                        }
+
+                        chrome.storage.sync.set({"animeTrackList":data.animeTrackList},function() {
+                            HideLoading();
+                            var countTrackList = 0;
+                            for( var i=0;i<data.animeTrackList.length;i++ ) {
+                                if( data.animeTrackList[i].status ) {
+                                    countTrackList++;
+                                }
+                            }
+                            document.getElementsByClassName('trackedAnimeHead')[0].title = 'Количество отслеживаемых аниме: ' + countTrackList;
+                            document.getElementsByClassName('trackedAnimeHead')[0].text = 'Отслеживаемые (' + countTrackList + ')';
+                            elem.children[0].src = elem.dataset.status === "true" ? imgCheckEpisode : imgCheckEpisodeGood;
+                            elem.dataset.status = elem.dataset.status === "true" ? "false" : "true";
+                        });
                     }
-                    document.getElementsByClassName('trackedAnimeHead')[0].title = 'Количество отслеживаемых аниме: ' + countTrackList;
-                    document.getElementsByClassName('trackedAnimeHead')[0].text = 'Отслеживаемые (' + countTrackList + ')';
-                    elem.dataset.status = elem.dataset.status === "true" ? "false" : "true";
-                    elem.children[0].src = elem.dataset.status === "true" ? imgCheckEpisode : imgCheckEpisodeGood;
-                    elem.children[0].title = 'Отслеживать новые серий';
-                });
+                }
+                xhr.send("id=" + id);
             });
         }
     }
