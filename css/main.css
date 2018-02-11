@@ -1,5 +1,12 @@
 .banerTopTwo {
+    overflow: hidden;
     position: relative;
+}
+.banerTopTwo.isClosed {
+    display: none;
+}
+.banerTopTwo.warning-openvost {
+    display: block!important;
 }
 .banerTopTwo span.close{
     position: absolute;

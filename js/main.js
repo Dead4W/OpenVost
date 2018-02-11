@@ -8,101 +8,204 @@ String.prototype.hashCode = function() {
     }
     return hash + "_" + this.length;
 };
+Array.prototype.remove = function(value) {
+    var idx = this.indexOf(value);
+    if (idx != -1) {
+        return this.splice(idx, 1);
+    }
+    return false;
+}
+
+function injectScript(actualCode) {
+    var script = document.createElement('script');
+    script.textContent = actualCode;
+    (document.head||document.documentElement).appendChild(script);
+    script.parentNode.removeChild(script);
+}
+
+//load functions
+function ShowLoading() {
+    injectScript("ShowLoading();");
+}
+function HideLoading() {
+    injectScript("HideLoading();");
+}
+
+var imgCheckEpisode = chrome.extension.getURL('img/cne.png');
+var imgCheckEpisodeGood = chrome.extension.getURL('img/cne_good.png');
 
 function bindTrackButton() {
-    $('.shortstoryShare.checkNewEpisodeShortstory img').on('mouseover',function() {
-        this.src = $(this).parents('.checkNewEpisodeShortstory').attr('data-status') == "true" ? imgCheckEpisode : imgCheckEpisodeGood;
-    }).on('mouseout',function() {
-        this.src = $(this).parents('.checkNewEpisodeShortstory').attr('data-status') == "true" ? imgCheckEpisodeGood : imgCheckEpisode;
-    });
-    $('.shortstoryShare.checkNewEpisodeShortstory').on('click',function() {
-        var elem = $(this);
-        var id = +elem.data('id');
-        ShowLoading();
-        $.ajax('https://api.animevost.org/animevost/api/v0.2/GetInfo/' + id).then(function(result) {
-            var episodes = JSON.parse(result.data[0].series.replace(/'/g,'"'));
-            var episodesNames = [];
-            for( name in episodes ) {
-                episodesNames.push(name);
-            }
-            var hashEpisode = episodesNames.join('-').hashCode();
+    var animeTrackIcons = document.getElementsByClassName('checkNewEpisodeShortstory');
+    for( var i = 0;i<animeTrackIcons.length;i++ ) {
+        var trackedAnime = animeTrackIcons[i];
+
+        trackedAnime.children[0].onmouseover = function(e) {
+            var elem = e.currentTarget;
+            elem.src = elem.parentElement.dataset.status === "true" ? imgCheckEpisode : imgCheckEpisodeGood;
+        }
+        trackedAnime.children[0].onmouseout = function(e) {
+            var elem = e.currentTarget;
+            elem.src = elem.parentElement.dataset.status === "true" ? imgCheckEpisodeGood : imgCheckEpisode;
+        }
+
+        trackedAnime.onclick = function(e) {
+            var elem = e.currentTarget;
+            var id = +elem.dataset.id;
+            ShowLoading();
             chrome.storage.sync.get(['animeTrackList'],function(data) {
                 if(  data.animeTrackList === undefined ) {
                     data.animeTrackList = [];
                     chrome.storage.sync.set({animeTrackList:data.animeTrackList});
                 }
-                if( elem.attr('data-status') === "true" ) {
-                    for( var i=0;i<data.animeTrackList.length;i++ ) {
-                        if( data.animeTrackList[i].id === id ) {
-                            data.animeTrackList[i].status = false;
+
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", 'https://api.animevost.org/v1/info', true);
+                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+                xhr.onreadystatechange = function() {
+                    if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+                        var result = JSON.parse(xhr.responseText);
+
+                        var episodes = JSON.parse(result.data[0].series.replace(/'/g,'"'));
+                        var episodesNames = [];
+                        for( name in episodes ) {
+                            episodesNames.push(name);
                         }
-                    }
-                } else {
-                    var success = false;
-                    for( var i=0;i<data.animeTrackList.length;i++ ) {
-                        if( data.animeTrackList[i].id === id ) {
-                            data.animeTrackList[i].status = true;
-                            success = true;
-                            break;
+                        episodesNames = episodesNames.join('-').replace(/\s+/g,'');
+
+                        var success = false;
+                        for( var i=0;i<data.animeTrackList.length;i++ ) {
+                            if( data.animeTrackList[i].id === id ) {
+                                data.animeTrackList[i].status = elem.dataset.status === "true" ? false : true;
+                                if( data.animeTrackList[i].status === false ) {
+                                    data.animeTrackList.remove(data.animeTrackList[i]);
+                                } else {
+                                    data.animeTrackList[i].hash = episodesNames.hashCode();
+                                }
+                                success = true;
+                                break;
+                            }
                         }
-                    }
-                    if( !success ) {
-                        data.animeTrackList.push({
-                            id: id,
-                            hash: hashEpisode,
-                            status: true
+                        if( !success && elem.dataset.status === "false" ) {
+                            data.animeTrackList.push({
+                                id: id,
+                                hash: episodesNames.hashCode(),
+                                status: true
+                            });
+                        }
+
+                        chrome.storage.sync.set({"animeTrackList":data.animeTrackList},function() {
+                            HideLoading();
+                            var countTrackList = 0;
+                            for( var i=0;i<data.animeTrackList.length;i++ ) {
+                                if( data.animeTrackList[i].status ) {
+                                    countTrackList++;
+                                }
+                            }
+                            document.getElementsByClassName('trackedAnimeHead')[0].title = 'Количество отслеживаемых аниме: ' + countTrackList;
+                            document.getElementsByClassName('trackedAnimeHead')[0].text = 'Отслеживаемые (' + countTrackList + ')';
+                            elem.children[0].src = elem.dataset.status === "true" ? imgCheckEpisode : imgCheckEpisodeGood;
+                            elem.dataset.status = elem.dataset.status === "true" ? "false" : "true";
                         });
                     }
                 }
-
-                chrome.storage.sync.set({"animeTrackList":data.animeTrackList},function() {
-                    HideLoading();
-                    var countTrackList = 0;
-                    for( var i=0;i<data.animeTrackList.length;i++ ) {
-                        if( data.animeTrackList[i].status ) {
-                            countTrackList++;
-                        }
-                    }
-                    $('.trackedAnimeHead').attr('title','Количество отслеживаемых аниме: ' + countTrackList).text('Отслеживаемые (' + countTrackList + ')');
-                    elem.find('img').attr('src',elem.attr('data-status') === "true" ? imgCheckEpisode : imgCheckEpisodeGood).attr('title','Отслеживать новые серий');
-                    elem.attr('data-status',elem.attr('data-status') === "true" ? "false" : "true");
-                });
+                xhr.send("id=" + id);
             });
-        });
-    });
+        }
+    }
+
 }
 
-function injectScript(file, node) {
+function injectScriptFile(file, node, defer) {
     var th = document.getElementsByTagName(node)[0];
     var s = document.createElement('script');
     s.setAttribute('type', 'text/javascript');
     s.setAttribute('src', file);
     th.appendChild(s);
+    return s;
 }
 
+/* hide info banner */
+var textBanner = document.getElementsByClassName('banerTopTwo')[0];
+if( textBanner !== undefined ) {
+    if( !textBanner.className.match(/warning-openvost/) ) {
+        var hashBanner = textBanner.innerHTML.hashCode();
+        chrome.storage.sync.get(['banner'],function(data) {
+            if( data.banner === undefined ) {
+                data.banner = {
+                    hash: "",
+                    isHidden: false
+                };
+                chrome.storage.sync.set({banner:data.banner});
+            }
+            if( hashBanner === data.banner.hash && data.banner.isHidden ) {
+                textBanner.className += ' isClosed';
+            } else {
+                var closeBannerIcon = document.createElement('span');
+                closeBannerIcon.className = 'close';
+                closeBannerIcon.title = 'Скрыть';
+                closeBannerIcon.innerText = 'X';
+
+                closeBannerIcon.onclick = function() {
+                    if( Confirm('Не показывать это объявление в будущем?') ) {
+                        textBanner.className += ' isClosed';
+                        data.banner = {
+                            hash: hashBanner,
+                            isHidden: true
+                        };
+                        chrome.storage.sync.set({banner:data.banner});
+                    }
+                }
+
+                textBanner.appendChild(closeBannerIcon);
+            }
+        });
+    }
+}
+
+//player inject
 if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
     var scriptPlayer;
     if( navigator.userAgent.match(/Opera/i) || navigator.userAgent.match(/Windows Phone/i)  ) {
-        scriptPlayer = $.getScript('http://old.play.aniland.org/HLS.js');
+        var scriptPlayer = injectScriptFile('http://old.play.aniland.org/HLS.js', 'body');
     } else {
-        scriptPlayer = $.getScript('http://hplay.aniland.org/player.js');
+        var scriptPlayer = injectScriptFile('http://hplay.aniland.org/player.js', 'body');
     }
-    scriptPlayer.success(function() {
-        injectScript( chrome.extension.getURL('js/openAnime.js'), 'body');
-    });
+    scriptPlayer.onload = function() {
+        injectScriptFile( chrome.extension.getURL('js/openAnime.js'), 'body');
+    }
 }
 
-$('.staticInfoRightSmotr').each(function() {
-    var countViews = $(this);
-    countViews.text(new Intl.NumberFormat('ru-RU').format(+countViews.text())).attr('title','Просмотров: ' + countViews.text());
-});
+//counters format
+if( document.getElementsByClassName('shortstoryHead').length ) {
+    var staticInfoRight = document.getElementsByClassName('staticInfoRight');
+    var counterTitlesRight = [
+        'Просмотров','Комментариев'
+    ];
+    var indexCounters;
+    for( indexCounters=0;indexCounters<staticInfoRight.length;indexCounters++ ) {
+        for( var indexInfoRight=0;indexInfoRight<staticInfoRight[indexCounters].children.length;indexInfoRight++ ) {
+            var elem = staticInfoRight[indexCounters].children[indexInfoRight];
+            if( indexInfoRight === 1 ) elem = elem.children[0];
+            var numberFormat = new Intl.NumberFormat('ru-RU').format(+elem.innerText);
+            elem.innerText = numberFormat;
+            elem.title = counterTitlesRight[indexInfoRight] + ': ' + elem.innerText;
+        }
+    }
+    var staticInfoLeft = document.getElementsByClassName('staticInfoLeft');
+    var counterTitlesLeft = [
+        'Многоликий человек-проект','Дата последнего обновления'
+    ];
+    for( indexCounters=0;indexCounters<staticInfoLeft.length;indexCounters++ ) {
+        for( var indexInfoLeft=0;indexInfoLeft<staticInfoLeft[indexCounters].children.length;indexInfoLeft++ ) {
+            var elem = staticInfoLeft[indexCounters].children[indexInfoLeft];
+            if( indexInfoLeft === 0) elem = elem.children[0];
+            elem.title = counterTitlesLeft[indexInfoLeft];
+        }
+    }
 
-$('.staticInfoRight span a').each(function() {
-    var comments = $(this);
-    comments.text(new Intl.NumberFormat('ru-RU').format(+comments.text())).attr('title','Комментариев: ' + comments.text());
-});
-
-$('.staticInfoLeft span.staticInfoLeftData').attr('title','Дата последнего обновления');
+    document.getElementsByClassName('staticInfoLeftData')[0].title = 'Дата последнего обновления';
+}
 
 function Confirm(msg) {
     return confirm(msg);
@@ -111,33 +214,7 @@ function Alert(msg) {
     return alert(msg);
 }
 
-/* hide banner */
-var textBanner = $('.banerTopTwo').html();
-var hashBanner = textBanner.hashCode();
-chrome.storage.sync.get(['lastHashBanner','isBannerHide'],function(data) {
-    if( data.isBannerHide === undefined ) {
-        chrome.storage.sync.set({lastHashBanner:0,isBannerHide:false});
-        data.lastHashBanner = 0;
-        data.isBannerHide = false;
-    }
-    if( hashBanner === data.lastHashBanner && data.isBannerHide ) {
-        $('.banerTopTwo').hide();
-    } else {
-        $('<span class="close" title="Скрыть">X</span>').appendTo('.banerTopTwo').on('click',function() {
-            if( Confirm('Не показывать это объявление в будущем?') ) {
-                $('.banerTopTwo').slideUp();
-                chrome.storage.sync.set({lastHashBanner:hashBanner,isBannerHide:true});
-            }
-        });
-    }
-});
-
-function ShowLoading(a){$("#loading-layer").remove();$("body").append("<div id='loading-layer' style='display:none'></div>");a?$("#loading-layer").html(a):$("#loading-layer").html("Загрузка. Пожалуйста, подождите...");a=($(window).width()-$("#loading-layer").width())/2;var b=($(window).height()-$("#loading-layer").height())/2;$("#loading-layer").css({left:a+"px",top:b+"px",position:"fixed",zIndex:"99"});$("#loading-layer").fadeTo("slow",.6)}
-function HideLoading(a){$("#loading-layer").fadeOut("slow",function(){$("#loading-layer").remove()})}
-
-/* check new episodes icon */
-var imgCheckEpisode = chrome.extension.getURL('img/cne.png');
-var imgCheckEpisodeGood = chrome.extension.getURL('img/cne_good.png');
+/* added icon for tracked anime */
 chrome.storage.sync.get(['animeTrackList'],function(data) {
     if( data.animeTrackList === undefined ) {
         data.animeTrackList = [];
@@ -149,28 +226,48 @@ chrome.storage.sync.get(['animeTrackList'],function(data) {
             countTrackList++;
         }
     }
-    $('.loginLink .loginLinkZ').after('<a class="loginLinkZ trackedAnimeHead" title="Количество отслеживаемых аниме: ' + countTrackList + '" href="http://animevost.org/tracked">Отслеживаемые (' + countTrackList + ')</a>');
-    var elemsCount = $('.shortstoryHead a.shortstoryShare img').length;
-    var indexElemsCount = 0;
-    $('.shortstoryHead a.shortstoryShare img').each(function() {
-        var elem = $(this);
-        var parent = $(this).parents('.shortstoryShare');
-        var id = +parent[0].id.match(/fav-id-(\d+)/)[1];
+    var trackedAnimeHeadLink = document.createElement('a');
+    trackedAnimeHeadLink.classList = 'loginLinkZ trackedAnimeHead';
+    trackedAnimeHeadLink.title = "Количество отслеживаемых аниме: " + countTrackList;
+    trackedAnimeHeadLink.href = "http://animevost.org/tracked";
+    trackedAnimeHeadLink.text = "Отслеживаемые (" + countTrackList + ")";
+
+    document.getElementsByClassName('loginLink')[0].insertBefore(trackedAnimeHeadLink, document.getElementsByClassName('loginLinkS')[0]);
+
+    var shortstoryShareElems = document.getElementsByClassName('shortstoryHead');
+    for( var i=0;i<shortstoryShareElems.length;i++ ) {
+        var elem = shortstoryShareElems[i].children[0];
+        var parent = shortstoryShareElems[i];
+        var id = +elem.id.match(/fav-id-(\d+)/)[1];
         var isChecking = false;
-        for( var i=0;i<data.animeTrackList.length;i++ ) {
-            if( data.animeTrackList[i].id === id ) {
-                isChecking = data.animeTrackList[i].status;
-                break
+
+        for( var indexTrack=0;indexTrack<data.animeTrackList.length;indexTrack++ ) {
+            if( data.animeTrackList[indexTrack].id === id ) {
+                isChecking = data.animeTrackList[indexTrack].status;
+                break;
             }
         }
-        parent.after('<a class="shortstoryShare checkNewEpisodeShortstory" data-status="' + isChecking + '" data-id="' + id + '"><img class="checkNewEpisode" title="Отслеживать новые серий" src="' + ( isChecking ? imgCheckEpisodeGood : imgCheckEpisode ) + '"></a>');
-        if( ++indexElemsCount >= elemsCount ) {
-            bindTrackButton();
-        }
-    });
+
+        var checkNewEpisode = document.createElement('img');
+        checkNewEpisode.classList = 'checkNewEpisode';
+        checkNewEpisode.title = 'Отслеживать новые серий';
+        checkNewEpisode.src = isChecking ? imgCheckEpisodeGood : imgCheckEpisode;
+
+        var checkNewEpisodeShortstory = document.createElement('a');
+        checkNewEpisodeShortstory.classList = 'shortstoryShare checkNewEpisodeShortstory';
+        checkNewEpisodeShortstory.dataset.id = id;
+        checkNewEpisodeShortstory.dataset.status = isChecking;
+
+        checkNewEpisodeShortstory.appendChild(checkNewEpisode);
+        parent.insertBefore(checkNewEpisodeShortstory, parent.children[1] );
+    }
+
+    bindTrackButton();
 });
 
+//tracked anime list page
 if( trackedPageOffset = location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
+    var dleContent = document.getElementById('dle-content');
     var trackedAnimeOnPage = 10;
     trackedPageOffset = (trackedPageOffset[1] === "" || +trackedPageOffset[1] === 0) ? 1 : +trackedPageOffset[1];
     document.addEventListener('openvost-inject',function() {
@@ -181,20 +278,38 @@ if( trackedPageOffset = location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                     animeListGood.push(data.animeTrackList[i].id);
                 }
             }
-            if( animeListGood.length === 0 ) {
-                $('<div class="userinfo">\n' +
-                    '<p class="userinfoHead">\n' +
-                    'Информация\n' +
-                    '</p>\n' +
-                    '<div class="userinfoCenter">\n' +
-                    'Вы ничего не вносили в свой список отслеживаемых.\n' +
-                    '</div>\n' +
-                    '</div>').appendTo('#dle-content');
+
+            var dleContent = document.getElementById('dle-content');
+
+            function trackInfo(msg) {
+                var mainInfoBadTrackList = document.createElement('div');
+                mainInfoBadTrackList.className = "userinfo";
+                var headInfoBadTrackList = document.createElement('p');
+                headInfoBadTrackList.className = "userinfoHead";
+                headInfoBadTrackList.innerText = "Информация";
+                var bodyInfoBadTrackList = document.createElement('div');
+                bodyInfoBadTrackList.className = "userinfoCenter";
+                bodyInfoBadTrackList.innerText = msg;
+
+                mainInfoBadTrackList.appendChild(headInfoBadTrackList);
+                mainInfoBadTrackList.appendChild(bodyInfoBadTrackList);
+
+                dleContent.appendChild(mainInfoBadTrackList);
             }
-            $("#dle-content").attr("data-anime-list",JSON.stringify(animeListGood.slice(trackedAnimeOnPage*(trackedPageOffset-1),trackedAnimeOnPage*trackedPageOffset)));
+
+            if( animeListGood.length === 0 ) {
+                trackInfo("Вы ничего не вносили в свой список отслеживаемых.");
+            }
+
+            var startOffset = trackedAnimeOnPage*(trackedPageOffset-1);
+            var endOffset = trackedAnimeOnPage*trackedPageOffset;
+            var animeListPage = animeListGood.slice(startOffset,endOffset);
+
+            dleContent.dataset.animeList = JSON.stringify( animeListPage );
+
             var evObj = document.createEvent('Events');
             evObj.initEvent('openvost-info-animelist', true, true);
-            $("#dle-content").get(0).dispatchEvent(evObj);
+            dleContent.dispatchEvent(evObj);
         });
     });
     document.addEventListener('openvost-animetracklist-done',function() {
@@ -208,21 +323,12 @@ if( trackedPageOffset = location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
             }
 
             //page list generate
-            $("#dle-content").append('<div class="block_2">\n' +
-                '<table width="100%" border="0" cellspacing="0" cellpadding="0">\n' +
-                '<tbody><tr>\n' +
-                '<td class="block_3"></td>\n' +
-                '<td class="block_4"></td>\n' +
-                '<td class="block_5"></td>\n' +
-                '</tr>\n' +
-                '</tbody></table>\n' +
-                '</div>');
-
             var currentPage = trackedPageOffset;
             var countPages = Math.ceil(animeListGood.length/trackedAnimeOnPage);
             var minPage,maxPage;
+            var pageBlock = document.getElementsByClassName('block_4')[0];
 
-            if( animeListGood.length > trackedAnimeOnPage ) {
+            if( countPages > 1 ) {
 
                 if( countPages < 10 ) {
                     minPage = 1;
@@ -238,24 +344,28 @@ if( trackedPageOffset = location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                     maxPage = currentPage + 4;
                 }
 
+                function constructPage(n) {
+                    return n === currentPage ? '<span>' + n + '</span>' : '<a href="/tracked/' + n + '/">' + n + '</a>';
+                }
+
                 if( minPage > 1 ) {
-                    $("#dle-content table td.block_4").append('<a href="/tracked/1/">1</a><span class="nav_ext">...</span>');
+                    pageBlock.innerHTML += constructPage(1) + "<span class=\"nav_ext\">...</span>";
                 }
 
                 for( var page=minPage;page<=maxPage;page++ ) {
-                    if( page === currentPage ) {
-                        $("#dle-content table td.block_4").append('<span>' + page + '</span>');
-                    } else {
-                        $("#dle-content table td.block_4").append('<a href="/tracked/' + page + '/">' + page + '</a>');
-                    }
+                    pageBlock.innerHTML += constructPage(page);
                 }
 
                 if( countPages - currentPage  >= 4 ) {
-                    $("#dle-content table td.block_4").append('<span class="nav_ext">...</span><a href="/tracked/' + countPages + '/">' + countPages + '</a>');
+                    pageBlock.innerHTML += "<span class=\"nav_ext\">...</span>" + constructPage(countPages);
                 }
             }
         });
     });
 }
 
-injectScript( chrome.extension.getURL('/js/inject.js'), 'body');
+//send icon url to element data
+document.getElementById('dle-content').dataset.openvostCneGood = imgCheckEpisodeGood;
+
+//inject random anime div fix and track list script
+injectScriptFile( chrome.extension.getURL('/js/inject.js'), 'body');

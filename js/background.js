@@ -9,7 +9,7 @@ String.prototype.hashCode = function() {
     return hash + "_" + this.length;
 };
 
-audio = document.createElement('audio');
+var audio = document.createElement('audio');
 audio.src = chrome.extension.getURL('lib/sound_push.wav');
 audio.volume = 0.13;
 
@@ -22,54 +22,64 @@ function getAnimeTrackindex(list,id) {
     return undefined;
 }
 
-function checkAnime(list,index) {
+function checkAnime() {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', "https://api.animevost.org/animevost/api/v0.2/GetInfo/" + list[index], false);
+    xhr.open('GET', "https://api.animevost.org/v1/last?page=1&quantity=20", false);
     xhr.send();
-    var result = JSON.parse(xhr.responseText);
-    var episodes = JSON.parse(result.data[0].series.replace(/'/g,'"'));
-    var episodesNames = [];
-    for( name in episodes ) {
-        episodesNames.push(name);
-    }
-    episodesNames = episodesNames.join('-');
-    chrome.storage.sync.get(['animeTrackList'],function(data) {
-        var animeTrackIndex = getAnimeTrackindex(data.animeTrackList,list[index]);
-        if( animeTrackIndex !== undefined && data.animeTrackList[ animeTrackIndex ].status && episodesNames.hashCode() !== data.animeTrackList[ animeTrackIndex ].hash ) {
-            var notification = new Notification("Залит новый эпизод", {
-                body: "На странице " + result.data[0].title + "\r\nБыл залит новый эпизод",
-                icon: result.data[0].urlImagePreview.match(/^http/) ? result.data[0].urlImagePreview : "http://animevost.org" + result.data[0].urlImagePreview,
-            });
-            audio.play();
-            notification.onclick = function () {
-                window.open("http://animevost.org/" + list[index] + "-openvost-redirect.html");
-                notification.close();
-            };
-            data.animeTrackList[ animeTrackIndex ].hash = episodesNames.hashCode();
-            chrome.storage.sync.set({animeTrackList:data.animeTrackList});
-        }
-    });
-    if( index+1<list.length ) {
-        setTimeout(function() {
-            checkAnime(list,index+1);
-        },500);
-    } else {
-        main();
-    }
-}
 
-function main() {
+    var result = JSON.parse(xhr.responseText);
+
     chrome.storage.sync.get(['animeTrackList'],function(data) {
-        var animeListGood = [];
-        for( i in data.animeTrackList ) {
-            if( data.animeTrackList[i].status ) {
-                animeListGood.push(data.animeTrackList[i].id);
+        if( !data.animeTrackList.length ) return;
+        for( var i = 0;i<result.data.length;i++ ) {
+            var animeLast = result.data[i];
+
+            var episodes = JSON.parse(animeLast.series.replace(/'/g,'"'));
+            var episodesNames = [];
+            for( name in episodes ) {
+                episodesNames.push(name);
+            }
+            episodesNames = episodesNames.join('-').replace(/\s+/g,'');
+
+            var animeTrackIndex = getAnimeTrackindex(data.animeTrackList,animeLast.id);
+            if( animeTrackIndex === undefined ) continue;
+
+            if( animeTrackIndex !== undefined && data.animeTrackList[ animeTrackIndex ].status && episodesNames.hashCode() !== data.animeTrackList[ animeTrackIndex ].hash ) {
+
+                var notification;
+
+                if( first === false ) {
+                    notification = new Notification("Залит новый эпизод", {
+                        body: "На странице " + animeLast.title,
+                        icon: animeLast.urlImagePreview.match(/^http/) ? animeLast.urlImagePreview : "http://animevost.org" + animeLast.urlImagePreview,
+                    }).onclick = function () {
+                        window.open("http://animevost.org/" + animeLast.id + "-openvost-redirect.html");
+                        this.close();
+                    };
+
+                    audio.play();
+                } else if( first === true ) {
+                    notification = new Notification("Похоже, вышло пару серий, пока вас не было", {
+                        body: "В последнее время был залит новый эпизод",
+                        icon: animeLast.urlImagePreview.match(/^http/) ? animeLast.urlImagePreview : "http://animevost.org" + animeLast.urlImagePreview,
+                    }).onclick = function () {
+                        window.open("http://animevost.org/tracked/");
+                        this.close();
+                    };
+
+                    audio.play();
+
+                    first = 'notificated';
+                }
+
+                data.animeTrackList[ animeTrackIndex ].hash = episodesNames.hashCode();
             }
         }
-        if( animeListGood.length ) {
-            checkAnime(animeListGood,0);
-        }
+        first = false;
+        chrome.storage.sync.set({animeTrackList:data.animeTrackList});
     });
 }
 
-setTimeout(main,5000);
+var first = true;
+
+setInterval(checkAnime,15000);
