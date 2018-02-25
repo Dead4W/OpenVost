@@ -14,6 +14,7 @@ audio.src = chrome.extension.getURL('lib/sound_push.wav');
 audio.volume = 0.13;
 
 function getAnimeTrackindex(list,id) {
+    var i;
     for( i in list ) {
         if( list[i].id === id ) {
             return i;
@@ -32,27 +33,28 @@ function checkAnime() {
     chrome.storage.sync.get(['animeTrackList'],function(data) {
         if( !data.animeTrackList.length ) return;
         for( var i = 0;i<result.data.length;i++ ) {
-            var animeLast = result.data[i];
+            let animeLast = result.data[i];
 
-            var episodes = JSON.parse(animeLast.series.replace(/'/g,'"'));
-            var episodesNames = [];
+            let episodes = JSON.parse(animeLast.series.replace(/'/g,'"'));
+            let episodesNames = [];
             for( name in episodes ) {
-                episodesNames.push(name);
+                episodesNames.push(name.toString());
             }
             episodesNames = episodesNames.join('-').replace(/\s+/g,'');
 
-            var animeTrackIndex = getAnimeTrackindex(data.animeTrackList,animeLast.id);
+            let animeTrackIndex = getAnimeTrackindex(data.animeTrackList,animeLast.id);
             if( animeTrackIndex === undefined ) continue;
 
             if( animeTrackIndex !== undefined && data.animeTrackList[ animeTrackIndex ].status && episodesNames.hashCode() !== data.animeTrackList[ animeTrackIndex ].hash ) {
 
-                var notification;
+                let notification;
 
                 if( first === false ) {
                     notification = new Notification("Залит новый эпизод", {
                         body: "На странице " + animeLast.title,
                         icon: animeLast.urlImagePreview.match(/^http/) ? animeLast.urlImagePreview : "http://animevost.org" + animeLast.urlImagePreview,
-                    }).onclick = function () {
+                    });
+                    notification.onclick = function () {
                         window.open("http://animevost.org/" + animeLast.id + "-openvost-redirect.html");
                         this.close();
                     };
@@ -82,4 +84,4 @@ function checkAnime() {
 
 var first = true;
 
-setInterval(checkAnime,15000);
+setInterval(checkAnime,60000);

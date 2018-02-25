@@ -1,11 +1,9 @@
 .banerTopTwo {
     overflow: hidden;
     position: relative;
-}
-.banerTopTwo.isClosed {
     display: none;
 }
-.banerTopTwo.warning-openvost {
+.banerTopTwo.openvost-isVisible {
     display: block!important;
 }
 .banerTopTwo span.close{
@@ -105,4 +103,24 @@ body .shortstory .shortstoryHead h2, body .shortstory .shortstoryHead h1 {
 }
 .shortstoryFuter {
     min-height: 14px;
+}
+#player,#player2 {
+    position: relative;
+}
+.continuePlayer {
+    position: absolute;
+    padding: 10px 0;
+    margin: auto;
+    left: 0;
+    right: 0;
+    width: 180px;
+    text-align: center;
+    background: #58565494;
+    color: #ffffff;
+    border-radius: 5px;
+    cursor: pointer;
+    z-index: 5;
+}
+#list .series {
+    cursor: pointer;
 }

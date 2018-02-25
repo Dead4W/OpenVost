@@ -16,7 +16,7 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
             var id = animelist[index];
             $.post('https://api.animevost.org/v1/info',{id:id}).success(function(result) {
                 var title = result.data[0].title;
-                var description = result.data[0].description;
+                var description = result.data[0].description.replace(/\\/g,'');
                 var year = result.data[0].year;
                 var type = result.data[0].type;
                 var genre = result.data[0].genre;

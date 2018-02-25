@@ -10,30 +10,23 @@ String.prototype.hashCode = function() {
 };
 Array.prototype.remove = function(value) {
     var idx = this.indexOf(value);
-    if (idx != -1) {
+    if (idx !== -1) {
         return this.splice(idx, 1);
     }
     return false;
-}
-
+};
 function injectScript(actualCode) {
     var script = document.createElement('script');
     script.textContent = actualCode;
     (document.head||document.documentElement).appendChild(script);
     script.parentNode.removeChild(script);
 }
-
-//load functions
 function ShowLoading() {
     injectScript("ShowLoading();");
 }
 function HideLoading() {
     injectScript("HideLoading();");
 }
-
-var imgCheckEpisode = chrome.extension.getURL('img/cne.png');
-var imgCheckEpisodeGood = chrome.extension.getURL('img/cne_good.png');
-
 function bindTrackButton() {
     var animeTrackIcons = document.getElementsByClassName('checkNewEpisodeShortstory');
     for( var i = 0;i<animeTrackIcons.length;i++ ) {
@@ -42,11 +35,11 @@ function bindTrackButton() {
         trackedAnime.children[0].onmouseover = function(e) {
             var elem = e.currentTarget;
             elem.src = elem.parentElement.dataset.status === "true" ? imgCheckEpisode : imgCheckEpisodeGood;
-        }
+        };
         trackedAnime.children[0].onmouseout = function(e) {
             var elem = e.currentTarget;
             elem.src = elem.parentElement.dataset.status === "true" ? imgCheckEpisodeGood : imgCheckEpisode;
-        }
+        };
 
         trackedAnime.onclick = function(e) {
             var elem = e.currentTarget;
@@ -63,7 +56,7 @@ function bindTrackButton() {
                 xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
                 xhr.onreadystatechange = function() {
-                    if(xhr.readyState == XMLHttpRequest.DONE && xhr.status == 200) {
+                    if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
                         var result = JSON.parse(xhr.responseText);
 
                         var episodes = JSON.parse(result.data[0].series.replace(/'/g,'"'));
@@ -76,7 +69,7 @@ function bindTrackButton() {
                         var success = false;
                         for( var i=0;i<data.animeTrackList.length;i++ ) {
                             if( data.animeTrackList[i].id === id ) {
-                                data.animeTrackList[i].status = elem.dataset.status === "true" ? false : true;
+                                data.animeTrackList[i].status = !elem.dataset.status === "true";
                                 if( data.animeTrackList[i].status === false ) {
                                     data.animeTrackList.remove(data.animeTrackList[i]);
                                 } else {
@@ -115,20 +108,26 @@ function bindTrackButton() {
     }
 
 }
-
-function injectScriptFile(file, node, defer) {
-    var th = document.getElementsByTagName(node)[0];
+function injectScriptFile(file, callback) {
+    var th = document.getElementsByTagName('body')[0];
     var s = document.createElement('script');
     s.setAttribute('type', 'text/javascript');
     s.setAttribute('src', file);
     th.appendChild(s);
-    return s;
+    if( typeof(callback) === "function" ) {
+        s.onload = callback;
+    } else return s;
 }
+function Confirm(msg) {
+    return confirm(msg);
+}
+
+var imgCheckEpisode = chrome.extension.getURL('img/cne.png');
+var imgCheckEpisodeGood = chrome.extension.getURL('img/cne_good.png');
 
 /* hide info banner */
 var textBanner = document.getElementsByClassName('banerTopTwo')[0];
 if( textBanner !== undefined ) {
-    if( !textBanner.className.match(/warning-openvost/) ) {
         var hashBanner = textBanner.innerHTML.hashCode();
         chrome.storage.sync.get(['banner'],function(data) {
             if( data.banner === undefined ) {
@@ -139,8 +138,9 @@ if( textBanner !== undefined ) {
                 chrome.storage.sync.set({banner:data.banner});
             }
             if( hashBanner === data.banner.hash && data.banner.isHidden ) {
-                textBanner.className += ' isClosed';
+                textBanner.className += ' openvost-isHidden';
             } else {
+                textBanner.className += ' openvost-isVisible';
                 var closeBannerIcon = document.createElement('span');
                 closeBannerIcon.className = 'close';
                 closeBannerIcon.title = 'Скрыть';
@@ -148,7 +148,7 @@ if( textBanner !== undefined ) {
 
                 closeBannerIcon.onclick = function() {
                     if( Confirm('Не показывать это объявление в будущем?') ) {
-                        textBanner.className += ' isClosed';
+                        textBanner.className = 'banerTopTwo openvost-isHidden';
                         data.banner = {
                             hash: hashBanner,
                             isHidden: true
@@ -160,20 +160,99 @@ if( textBanner !== undefined ) {
                 textBanner.appendChild(closeBannerIcon);
             }
         });
-    }
 }
 
 //player inject
+var videolinks = {};
 if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
-    var scriptPlayer;
-    if( navigator.userAgent.match(/Opera/i) || navigator.userAgent.match(/Windows Phone/i)  ) {
-        var scriptPlayer = injectScriptFile('http://old.play.aniland.org/HLS.js', 'body');
-    } else {
-        var scriptPlayer = injectScriptFile('http://hplay.aniland.org/player.js', 'body');
-    }
-    scriptPlayer.onload = function() {
-        injectScriptFile( chrome.extension.getURL('js/openAnime.js'), 'body');
-    }
+    window.addEventListener("message", function(event) {
+        if( event.type === 'message' && event.data.type === 'FROM_PAGE_TO_OPENVOST_CHECK_SERVERS' ) {
+            let id = +event.data.id;
+            if( !id ) {
+                return;
+            }
+            if( typeof(videolinks[id]) !== undefined ) {
+                var videolinksEpisode = [
+                    "http://video.aniland.org/720/" + id + ".mp4",
+                    "http://new.aniland.org/720/" + id + ".mp4",
+                    "http://mp4.aniland.org/720/" + id + ".mp4",
+                    "http://fast.aniland.org/720/" + id + ".mp4",
+
+                    "http://video.aniland.org/" + id + ".mp4",
+                    "http://tk.aniland.org/" + id + ".mp4",
+                    "http://new.aniland.org/" + id + ".mp4",
+                    "http://fast.aniland.org/" + id + ".mp4",
+                    "http://mp4.aniland.org/" + id + ".mp4"
+                ];
+
+                let xhr_api = new XMLHttpRequest();
+                xhr_api.open('POST', 'https://api.animevost.org/v1/videolinks', false);
+                xhr_api.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr_api.send('id=' + id);
+                var i;
+                if( xhr_api.readyState == 4 && xhr_api.status == 200 ) {
+                    let videolinksApi = JSON.parse(xhr_api.responseText);
+                    for( let videoLinkObjName in videolinksApi ) {
+                        let videoLinkObj = videolinksApi[videoLinkObjName];
+                        for( i =0;i<videoLinkObj.length;i++ ) {
+                            if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 && !videoLinkObj[i].match(/:hls:/) ) {
+                                videolinksEpisode.push(videoLinkObj[i]);
+                            }
+                        }
+                    }
+                }
+                videolinks[id] = videolinksEpisode;
+            } else {
+                videolinksEpisode = videolinks[id];
+            }
+
+            let badServers = 0;
+            for( i =0;i<videolinksEpisode.length;i++ ) {
+                let videolink = videolinksEpisode[i];
+                let xhr = new XMLHttpRequest();
+                xhr.open('HEAD', videolink, true);
+                xhr.timeout = 15000;
+                if( !videolink.match(/drek\./) ) {
+                    xhr.setRequestHeader('Cache-Control', 'no-cache');
+                }
+                let xhr_error = function() {
+                    badServers++;
+                    if( badServers === videolinksEpisode.length ) {
+                        if( typeof(event.data.try) == "undefined" ) {
+                            event.data.try = 0;
+                        }
+                        event.data.try++;
+                        if( event.data.try >= 3 ) {
+                            console.warn('[OpenVost] error find servers');
+                            injectScript('badFindServers(' + id + ')');
+                        } else {
+                            window.postMessage({
+                                type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
+                                id: id,
+                                try: event.data.try
+                            }, "*");
+                        }
+                    }
+                };
+                xhr.onload = function (e) {
+                    if ( xhr.status !== 404 ) {
+                        injectScript('addVideoUrl(' + id + ',"' + videolink + '")');
+                    } else {
+                        xhr_error();
+                    }
+                };
+                xhr.onerror = xhr_error;
+                xhr.ontimeout = xhr_error;
+                xhr.send(null);
+            }
+        }
+    });
+
+    var loadOpenAnime = function() {
+        injectScriptFile( chrome.extension.getURL('js/openAnime.js'));
+    };
+
+    injectScriptFile('http://old.play.aniland.org/HLS.js',loadOpenAnime)
 }
 
 //counters format
@@ -185,10 +264,9 @@ if( document.getElementsByClassName('shortstoryHead').length ) {
     var indexCounters;
     for( indexCounters=0;indexCounters<staticInfoRight.length;indexCounters++ ) {
         for( var indexInfoRight=0;indexInfoRight<staticInfoRight[indexCounters].children.length;indexInfoRight++ ) {
-            var elem = staticInfoRight[indexCounters].children[indexInfoRight];
+            let elem = staticInfoRight[indexCounters].children[indexInfoRight];
             if( indexInfoRight === 1 ) elem = elem.children[0];
-            var numberFormat = new Intl.NumberFormat('ru-RU').format(+elem.innerText);
-            elem.innerText = numberFormat;
+            elem.innerText = new Intl.NumberFormat('ru-RU').format(+elem.innerText);
             elem.title = counterTitlesRight[indexInfoRight] + ': ' + elem.innerText;
         }
     }
@@ -198,7 +276,7 @@ if( document.getElementsByClassName('shortstoryHead').length ) {
     ];
     for( indexCounters=0;indexCounters<staticInfoLeft.length;indexCounters++ ) {
         for( var indexInfoLeft=0;indexInfoLeft<staticInfoLeft[indexCounters].children.length;indexInfoLeft++ ) {
-            var elem = staticInfoLeft[indexCounters].children[indexInfoLeft];
+            let elem = staticInfoLeft[indexCounters].children[indexInfoLeft];
             if( indexInfoLeft === 0) elem = elem.children[0];
             elem.title = counterTitlesLeft[indexInfoLeft];
         }
@@ -207,14 +285,7 @@ if( document.getElementsByClassName('shortstoryHead').length ) {
     document.getElementsByClassName('staticInfoLeftData')[0].title = 'Дата последнего обновления';
 }
 
-function Confirm(msg) {
-    return confirm(msg);
-}
-function Alert(msg) {
-    return alert(msg);
-}
-
-/* added icon for tracked anime */
+//added icon for tracked anime
 chrome.storage.sync.get(['animeTrackList'],function(data) {
     if( data.animeTrackList === undefined ) {
         data.animeTrackList = [];
@@ -303,7 +374,7 @@ if( trackedPageOffset = location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
 
             var startOffset = trackedAnimeOnPage*(trackedPageOffset-1);
             var endOffset = trackedAnimeOnPage*trackedPageOffset;
-            var animeListPage = animeListGood.slice(startOffset,endOffset);
+            var animeListPage = animeListGood.reverse().slice(startOffset,endOffset);
 
             dleContent.dataset.animeList = JSON.stringify( animeListPage );
 
@@ -364,8 +435,8 @@ if( trackedPageOffset = location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
     });
 }
 
-//send icon url to element data
+//send icon url to element data for anime track list
 document.getElementById('dle-content').dataset.openvostCneGood = imgCheckEpisodeGood;
 
-//inject random anime div fix and track list script
-injectScriptFile( chrome.extension.getURL('/js/inject.js'), 'body');
+//inject track list script
+injectScriptFile( chrome.extension.getURL('/js/inject.js'));
