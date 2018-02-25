@@ -32,9 +32,9 @@ function pad(num, length) {
 }
 function secToPlayerTime(time) {
     var hours = Math.floor(time / 3600),
-    minutes = Math.floor((time-hours*60) / 60),
-    seconds = time % 60,
-    playerTime = minutes + ":" + pad(seconds,2);
+        minutes = pad(Math.floor((time-hours*3600) / 60),( hours ? 2 : 1 )),
+        seconds = time % 60,
+        playerTime = minutes + ":" + pad(seconds,2);
     return hours ? hours + ":" + playerTime : playerTime;
 }
 function getPoster(id) {
