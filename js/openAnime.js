@@ -14,12 +14,21 @@ function addVideoUrl(id,url) {
 
     var currentPlayer = activePlayer === "player2" ? player : kinoPlayer;
     if( currentPlayer.Get('episode_id') == id ) {
-        if( goodVideoUrls[id].length <= 1 && currentPlayer.Get('auto_play') ) {
+        if( currentPlayer.Get('file') === "" && ( currentPlayer.Get('auto_play') || currentPlayer.getStatus() === 3 ) ) {
             currentPlayer.Stop();
             currentPlayer.Play(goodVideoUrls[id].join('|'));
         } else {
             currentPlayer.Set('file',goodVideoUrls[id].join('|'));
         }
+    }
+}
+function badFindServers(id) {
+    var currentPlayer = activePlayer === "player2" ? player : kinoPlayer;
+    if( +currentPlayer.Get('episode_id') === +id ) {
+        window.postMessage({
+            type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
+            id: id
+        }, "*");
     }
 }
 function isFullscreen() {
@@ -109,7 +118,7 @@ function open_vost_kino(id,snum,autoPlay,startPlayTime) {
     }
 
     if( $("#" + snum).hasClass('kactive') ) {
-        appendContinueDiv(kinoPlayer);
+        appendContinueDiv('player');
     }
 
     $('.kactive').removeClass('kactive');
@@ -314,7 +323,7 @@ $('#kinoon').magnificPopup({
             appendContinueDiv('player');
         },
         close: function() {
-            $('#player .continuePlayer').remove();
+            $('#player2 .continuePlayer').remove();
             appendContinueDiv('player2');
         }
     }

@@ -163,51 +163,87 @@ if( textBanner !== undefined ) {
 }
 
 //player inject
+var videolinks = {};
 if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
     window.addEventListener("message", function(event) {
         if( event.type === 'message' && event.data.type === 'FROM_PAGE_TO_OPENVOST_CHECK_SERVERS' ) {
-            let id = event.data.id;
-            var videolinks = [
-                "http://video.aniland.org/720/" + id + ".mp4",
-                "http://new.aniland.org/720/" + id + ".mp4",
-                "http://mp4.aniland.org/720/" + id + ".mp4",
-                "http://fast.aniland.org/720/" + id + ".mp4",
+            let id = +event.data.id;
+            if( !id ) {
+                return;
+            }
+            if( typeof(videolinks[id]) !== undefined ) {
+                var videolinksEpisode = [
+                    "http://video.aniland.org/720/" + id + ".mp4",
+                    "http://new.aniland.org/720/" + id + ".mp4",
+                    "http://mp4.aniland.org/720/" + id + ".mp4",
+                    "http://fast.aniland.org/720/" + id + ".mp4",
 
-                "http://video.aniland.org/" + id + ".mp4",
-                "http://tk.aniland.org/" + id + ".mp4",
-                "http://new.aniland.org/" + id + ".mp4",
-                "http://fast.aniland.org/" + id + ".mp4",
-                "http://mp4.aniland.org/" + id + ".mp4"
-            ];
+                    "http://video.aniland.org/" + id + ".mp4",
+                    "http://tk.aniland.org/" + id + ".mp4",
+                    "http://new.aniland.org/" + id + ".mp4",
+                    "http://fast.aniland.org/" + id + ".mp4",
+                    "http://mp4.aniland.org/" + id + ".mp4"
+                ];
 
-            let xhr_api = new XMLHttpRequest();
-            xhr_api.open('POST', 'https://api.animevost.org/v1/videolinks', false);
-            xhr_api.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-            xhr_api.send('id=' + id);
-            var i;
-            if( xhr_api.readyState == 4 && xhr_api.status == 200 ) {
-                let videolinksApi = JSON.parse(xhr_api.responseText);
-                for( let videoLinkObjName in videolinksApi ) {
-                    let videoLinkObj = videolinksApi[videoLinkObjName];
-                    for( i =0;i<videoLinkObj.length;i++ ) {
-                        if( videolinks.indexOf(videoLinkObj[i]) === -1 ) {
-                            videolinks.push(videoLinkObj[i]);
+                let xhr_api = new XMLHttpRequest();
+                xhr_api.open('POST', 'https://api.animevost.org/v1/videolinks', false);
+                xhr_api.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr_api.send('id=' + id);
+                var i;
+                if( xhr_api.readyState == 4 && xhr_api.status == 200 ) {
+                    let videolinksApi = JSON.parse(xhr_api.responseText);
+                    for( let videoLinkObjName in videolinksApi ) {
+                        let videoLinkObj = videolinksApi[videoLinkObjName];
+                        for( i =0;i<videoLinkObj.length;i++ ) {
+                            if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 ) {
+                                videolinksEpisode.push(videoLinkObj[i]);
+                            }
                         }
                     }
                 }
+                videolinks[id] = videolinksEpisode;
+            } else {
+                videolinksEpisode = videolinks[id];
             }
 
-            for( i =0;i<videolinks.length;i++ ) {
-                let videolink = videolinks[i];
+            let badServers = 0;
+            for( i =0;i<videolinksEpisode.length;i++ ) {
+                let videolink = videolinksEpisode[i];
                 let xhr = new XMLHttpRequest();
                 xhr.open('HEAD', videolink, true);
                 xhr.timeout = 15000;
-                xhr.setRequestHeader('Cache-Control', 'no-cache');
-                xhr.onload = function (e) {
-                    if (xhr.status !== "404") {
-                        injectScript('addVideoUrl(' + id + ',"' + videolink + '")');
+                if( !videolink.match(/drek\./) ) {
+                    xhr.setRequestHeader('Cache-Control', 'no-cache');
+                }
+                let xhr_error = function() {
+                    console.log('bad');
+                    badServers++;
+                    if( badServers === videolinksEpisode.length ) {
+                        if( typeof(event.data.try) == "undefined" ) {
+                            event.data.try = 0;
+                        }
+                        event.data.try++;
+                        if( event.data.try >= 3 ) {
+                            console.warn('[OpenVost] error find servers');
+                            injectScript('badFindServers(' + id + ')');
+                        } else {
+                            window.postMessage({
+                                type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
+                                id: id,
+                                try: event.data.try
+                            }, "*");
+                        }
                     }
                 };
+                xhr.onload = function (e) {
+                    if ( xhr.status !== 404 ) {
+                        injectScript('addVideoUrl(' + id + ',"' + videolink + '")');
+                    } else {
+                        xhr_error();
+                    }
+                };
+                xhr.onerror = xhr_error;
+                xhr.ontimeout = xhr_error;
                 xhr.send(null);
             }
         }
