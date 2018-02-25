@@ -164,11 +164,11 @@ function appendContinueDiv(playerName) {
     if(startPlayTime === undefined || startPlayTime < 5 ) {
         startPlayTime = 0;
     }
-    if( $('#player .continuePlayer').length || !startPlayTime ) {
+    let $player = $('#' + playerName);
+    if( $player.find('.continuePlayer').length || !startPlayTime ) {
         return;
     }
     let playerUppod = playerName === "player2" ? player : kinoPlayer;
-    let $player = $('#' + playerName);
     $('<div class="continuePlayer">Продолжить с ' + secToPlayerTime(startPlayTime) + '</div>').appendTo($player).css('top',$player.get(0).clientHeight / 2 + 65).on('click',function() {
         $player.find('.continuePlayer').remove();
         playerUppod.Set('start',startPlayTime);
@@ -314,7 +314,7 @@ $('#kinoon').magnificPopup({
             appendContinueDiv('player');
         },
         close: function() {
-            $('#player2 .continuePlayer').remove();
+            $('#player .continuePlayer').remove();
             appendContinueDiv('player2');
         }
     }
