@@ -195,7 +195,7 @@ if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
                     for( let videoLinkObjName in videolinksApi ) {
                         let videoLinkObj = videolinksApi[videoLinkObjName];
                         for( i =0;i<videoLinkObj.length;i++ ) {
-                            if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 ) {
+                            if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 && !videoLinkObj[i].match(/:hls:/) ) {
                                 videolinksEpisode.push(videoLinkObj[i]);
                             }
                         }
@@ -216,7 +216,6 @@ if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
                     xhr.setRequestHeader('Cache-Control', 'no-cache');
                 }
                 let xhr_error = function() {
-                    console.log('bad');
                     badServers++;
                     if( badServers === videolinksEpisode.length ) {
                         if( typeof(event.data.try) == "undefined" ) {
