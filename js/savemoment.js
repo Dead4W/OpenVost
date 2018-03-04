@@ -1,4 +1,4 @@
-if( location.search.match(/\?openvost_savemoment/) ) {
+if( location.search.match(/\?openvost_savemoment/) && parent !== window ) {
     function parseURLParams(url) {
         var queryStart = url.indexOf("?") + 1,
             queryEnd   = url.indexOf("#") + 1 || url.length + 1,
@@ -39,21 +39,6 @@ if( location.search.match(/\?openvost_savemoment/) ) {
         video.pause();
 
         video.addEventListener('loadeddata',function() {
-            document.body.style.background = "#fff";
-            document.documentElement.style.width = '100vw';
-            document.documentElement.style.height = '100vh';
-            document.documentElement.style.overflow = 'hidden';
-
-            var loadImage = document.createElement('img');
-            loadImage.src = "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif";
-            loadImage.style.position = "fixed";
-            loadImage.style.zIndex = "999";
-            loadImage.style.width = '100vw';
-            loadImage.style.height = '100vh';
-
-            document.body.appendChild(loadImage);
-            document.body.style.margin = 0;
-
             var canvas = document.createElement('canvas');
             canvas.height = video.videoHeight;
             canvas.width = video.videoWidth;
@@ -65,9 +50,7 @@ if( location.search.match(/\?openvost_savemoment/) ) {
             a.setAttribute("download", params.name[0] + "-" + rand_string(4) + ".png");
             a.setAttribute("href", data);
             a.click();
-            setTimeout(function() {
-                window.close();
-            }, 600);
+            video.remove();
         })
     });
 }

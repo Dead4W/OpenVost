@@ -59,7 +59,7 @@ function bindTrackButton() {
                     if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
                         var result = JSON.parse(xhr.responseText);
 
-                        var episodes = JSON.parse(result.data[0].series.replace(/'/g,'"'));
+                        var episodes = result.data[0].series === "" ? [] : JSON.parse(result.data[0].series.replace(/'/g,'"'));
                         var episodesNames = [];
                         for( name in episodes ) {
                             episodesNames.push(name);

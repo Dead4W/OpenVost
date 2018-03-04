@@ -23,6 +23,22 @@ function getAnimeTrackindex(list,id) {
     return undefined;
 }
 
+chrome.webRequest.onHeadersReceived.addListener(
+    function(details) {
+        if( details.url.match(/\?openvost_savemoment/) ) {
+            for( var i = 0;i<details.responseHeaders.length;i++ ) {
+                if( details.responseHeaders[i].name.toLowerCase() === "location" ) {
+                    var params = details.url.match(/\?(.+)/)[1];
+                    details.responseHeaders[i].value = details.responseHeaders[i].value + '?' + params;
+                    break;
+                }
+            }
+        }
+        return {responseHeaders: details.responseHeaders};
+    },
+    {urls: ["*://*.aniland.org/*", "*://*.zerocdn.com/*"]},
+    ["responseHeaders","blocking"]);
+
 function checkAnime() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', "https://api.animevost.org/v1/last?page=1&quantity=20", false);

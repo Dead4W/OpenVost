@@ -298,9 +298,14 @@ $(".functionPanel div").css('width','25%').first().before("<a href=\"#download\"
         return false;
     }
     var name = $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-') + $('.epizode.active').text().replace(' серия','ep');
-
-    var href = $('#player2 video').get(0).currentSrc + '?openvost_savemoment=' + encodeURI(player.CurrentTime()) + '&name=' + encodeURI(name);
-    window.open(href,'save moment window',"width=200,height=200");
+    var iframe = document.createElement('iframe');
+    iframe.src = $('#player2 video').get(0).currentSrc + '?openvost_savemoment=' + encodeURI(player.currentTime()) + '&name=' + encodeURI(name);
+    iframe.style.display = 'none';
+    iframe.className = 'openvost-save-moment-iframe';
+    iframe.onload = function() {
+        iframe.remove();
+    };
+    document.body.appendChild(iframe);
 });
 
 $('#kinoon').magnificPopup({
