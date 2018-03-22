@@ -14,8 +14,7 @@ function addVideoUrl(id,url) {
 
     var currentPlayer = activePlayer === "player2" ? player : kinoPlayer;
     if( currentPlayer.Get('episode_id') == id ) {
-        if( currentPlayer.Get('file') === "" && ( currentPlayer.Get('auto_play') || currentPlayer.getStatus() === 3 ) ) {
-            currentPlayer.Stop();
+        if( currentPlayer.Get('file') === "" ) {
             currentPlayer.Play(goodVideoUrls[id].join('|'));
         } else {
             currentPlayer.Set('file',goodVideoUrls[id].join('|'));
@@ -24,7 +23,7 @@ function addVideoUrl(id,url) {
 }
 function badFindServers(id) {
     var currentPlayer = activePlayer === "player2" ? player : kinoPlayer;
-    if( +currentPlayer.Get('episode_id') === +id ) {
+    if( currentPlayer.Get('episode_id') == id ) {
         window.postMessage({
             type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
             id: id
@@ -55,10 +54,6 @@ function open_vost(id,snum,autoPlay,startPlayTime) {
         num = 0
     }
 
-    if( $("#p" + snum).hasClass('active') ) {
-        appendContinueDiv('player2');
-    }
-
     $('.active').removeClass('active');
     $('#scrolltwo').scrollTo("#p" + num, 500, {
         axis: 'x'
@@ -85,15 +80,23 @@ function open_vost(id,snum,autoPlay,startPlayTime) {
         player.Set('repeat',autoPlay);
         player.Stop();
     } else {
+        $('#player2').html('');
         player = new Uppod({
             m: "video",
             st: st.default,
             uid: 'player2',
             poster: poster,
             h: "390",
-            start: startPlayTime ? startPlayTime : 0
+			w: "695",
+            start: startPlayTime ? startPlayTime : 0,
+            onReady: function(uppod){
+                if( $("#p" + snum).hasClass('active') ) {
+                    appendContinueDiv('player2');
+                }
+            }
         });
         constructPlayerOpenvostData('#player2',player);
+        $('#player2 video').attr('crossorigin','anonymous');
     }
     player.Set("episode_id",id);
     player.Set("auto_play",autoPlay);
@@ -104,21 +107,12 @@ function open_vost(id,snum,autoPlay,startPlayTime) {
         } else {
             player.Set('file',goodVideoUrls[id].join('|'))
         }
-    } else {
-        window.postMessage({
-            type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
-            id: id
-        }, "*");
     }
 }
 function open_vost_kino(id,snum,autoPlay,startPlayTime) {
     var num = snum - 2;
     if (num < 0) {
         num = 0
-    }
-
-    if( $("#" + snum).hasClass('kactive') ) {
-        appendContinueDiv('player');
     }
 
     $('.kactive').removeClass('kactive');
@@ -147,7 +141,12 @@ function open_vost_kino(id,snum,autoPlay,startPlayTime) {
             st: st.default,
             uid: "player",
             poster: poster,
-            h: "559"
+            h: "559",
+            onReady: function(uppod){
+                if( $("#" + snum).hasClass('kactive') ) {
+                    appendContinueDiv('player');
+                }
+            }
         });
         constructPlayerOpenvostData('#player',kinoPlayer);
     }
@@ -161,11 +160,6 @@ function open_vost_kino(id,snum,autoPlay,startPlayTime) {
         } else {
             kinoPlayer.Set('file',goodVideoUrls[id].join('|'))
         }
-    } else {
-        window.postMessage({
-            type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
-            id: id
-        }, "*");
     }
 }
 function appendContinueDiv(playerName) {
@@ -209,6 +203,13 @@ function constructPlayerOpenvostData(find,playerUppod) {
         player: playerUppod,
     };
 }
+function downloadEpisode(href,name) {
+    window.postMessage({
+        type: "FROM_PAGE_TO_OPENVOST_DOWNLOAD_FILE",
+        url: href,
+        filename: name
+    }, "*");
+}
 
 if( typeof(dle_news_id) === "undefined" ) {
     let data = window.location.pathname.match(/tip\/[^\/]+\/(\d+)-/);
@@ -223,6 +224,36 @@ if( dle_news_id ) {
         $('.current-rating').text(rating).get(0).style.width = rating*10 + '%';
         $('#vote-num-id-' + dle_news_id).parent().html('(<span id="vote-num-id-' + dle_news_id + '">' + rating + '/10</span>)');
     });
+
+	//download panel
+	var playerDownloadPanel = document.createElement('div');
+	playerDownloadPanel.className = 'playerDownloadPanel';
+
+	var animPanel = document.createElement('div');
+	animPanel.className = 'animPanel';
+
+	var videoName = $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-') + $('.epizode.active').text().replace(' серия','ep');
+
+	var downloadButton1 = document.createElement('a');
+	downloadButton1.className = 'downloadButton';
+	downloadButton1.onclick = function() {
+	    let finder = '.epizode.active';
+        downloadEpisode('http://file.aniland.org/' + parseAjaxFunction($(finder))[0] + '.mp4','openvost anime/' + $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-') + 'anime/' + $(finder).text().replace(' серия','ep') + '-480-sd.mp4');
+    };
+	downloadButton1.innerHTML = 'Скачать 480p';
+	var downloadButton2 = document.createElement('a');
+	downloadButton2.className = 'downloadButton';
+	downloadButton2.onclick = function() {
+        let finder = '.epizode.active';
+        downloadEpisode('http://file.aniland.org/720/' + parseAjaxFunction($(finder))[0] + '.mp4','openvost anime/' + $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-') + 'anime/' + $(finder).text().replace(' серия','ep') + '-720-hd.mp4');
+    };
+	downloadButton2.innerHTML = 'Скачать 720p (HD)';
+
+	animPanel.appendChild(downloadButton1);
+	animPanel.appendChild(downloadButton2);
+
+	playerDownloadPanel.appendChild(animPanel);
+	$(playerDownloadPanel).insertBefore('#player2');
 }
 
 var startPlayTime = $.cookie(window.location.pathname + "/time");
@@ -364,6 +395,13 @@ document.addEventListener('end', function () {
     }
 }, false);
 document.addEventListener('play', function () {
+    var currentPlayer = activePlayer === 'player2' ? player : kinoPlayer;
+    if( currentPlayer.Get('file') === "" || goodVideoUrls[currentPlayer.Get('episode_id')] === undefined ) {
+        window.postMessage({
+            type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
+            id: currentPlayer.Get('episode_id')
+        }, "*");
+    }
     $('.continuePlayer').remove();
 }, false);
 
@@ -377,3 +415,7 @@ setInterval(function() {
         });
     }
 },3000);
+
+setInterval(function() {
+
+},10000);

@@ -13,6 +13,27 @@ var audio = document.createElement('audio');
 audio.src = chrome.extension.getURL('lib/sound_push.wav');
 audio.volume = 0.13;
 
+setInterval(function() {
+    console.log(chrome.extension.getViews());
+},5000);
+
+chrome.runtime.onMessage.addListener(function(request) {
+    if (request.type === "download_file") {
+        chrome.downloads.download({
+            url: request.options.url,
+            filename: request.options.filename
+        });
+    }
+});
+
+
+Array.prototype.remove = function(value) {
+    var idx = this.indexOf(value);
+    if (idx !== -1) {
+        return this.splice(idx, 1);
+    }
+    return false;
+};
 function getAnimeTrackindex(list,id) {
     var i;
     for( i in list ) {
@@ -39,19 +60,22 @@ chrome.webRequest.onHeadersReceived.addListener(
     {urls: ["*://*.aniland.org/*", "*://*.zerocdn.com/*"]},
     ["responseHeaders","blocking"]);
 
+
 function checkAnime() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', "https://api.animevost.org/v1/last?page=1&quantity=20", false);
     xhr.send();
 
     var result = JSON.parse(xhr.responseText);
+    result.data.reverse();
 
     chrome.storage.sync.get(['animeTrackList'],function(data) {
         if( !data.animeTrackList.length ) return;
+
         for( var i = 0;i<result.data.length;i++ ) {
             let animeLast = result.data[i];
 
-            let episodes = JSON.parse(animeLast.series.replace(/'/g,'"'));
+            let episodes = animeLast.series === "" ? [] : JSON.parse(animeLast.series.replace(/'/g,'"'));
             let episodesNames = [];
             for( name in episodes ) {
                 episodesNames.push(name.toString());
@@ -62,42 +86,32 @@ function checkAnime() {
             if( animeTrackIndex === undefined ) continue;
 
             if( animeTrackIndex !== undefined && data.animeTrackList[ animeTrackIndex ].status && episodesNames.hashCode() !== data.animeTrackList[ animeTrackIndex ].hash ) {
-
                 let notification;
 
-                if( first === false ) {
-                    notification = new Notification("Залит новый эпизод", {
-                        body: "На странице " + animeLast.title,
-                        icon: animeLast.urlImagePreview.match(/^http/) ? animeLast.urlImagePreview : "http://animevost.org" + animeLast.urlImagePreview,
-                    });
-                    notification.onclick = function () {
-                        window.open("http://animevost.org/" + animeLast.id + "-openvost-redirect.html");
-                        this.close();
-                    };
+                notification = new Notification("Залит новый эпизод", {
+                    body: "На странице " + animeLast.title,
+                    icon: animeLast.urlImagePreview.match(/^http/) ? animeLast.urlImagePreview : "http://animevost.org" + animeLast.urlImagePreview,
+                });
+                notification.onclick = function () {
+                    window.open("http://animevost.org/" + animeLast.id + "-openvost-redirect.html");
+                    this.close();
+                };
 
-                    audio.play();
-                } else if( first === true ) {
-                    notification = new Notification("Похоже, вышло пару серий, пока вас не было", {
-                        body: "В последнее время был залит новый эпизод",
-                        icon: animeLast.urlImagePreview.match(/^http/) ? animeLast.urlImagePreview : "http://animevost.org" + animeLast.urlImagePreview,
-                    }).onclick = function () {
-                        window.open("http://animevost.org/tracked/");
-                        this.close();
-                    };
+                audio.play();
 
-                    audio.play();
-
-                    first = 'notificated';
-                }
-
+                //update anime episodes hash for monitoring
                 data.animeTrackList[ animeTrackIndex ].hash = episodesNames.hashCode();
+
+                //update position anime in tracked list
+                let currentAnimeInfo = data.animeTrackList[ animeTrackIndex ];
+                data.animeTrackList.remove(data.animeTrackList[ animeTrackIndex ]);
+                data.animeTrackList.push(currentAnimeInfo);
+                console.log(currentAnimeInfo);
+                console.log(data.animeTrackList);
             }
         }
-        first = false;
         chrome.storage.sync.set({animeTrackList:data.animeTrackList});
     });
 }
-
-var first = true;
 
 setInterval(checkAnime,60000);
