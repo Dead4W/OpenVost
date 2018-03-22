@@ -30,6 +30,7 @@
       "64": "lib/openvost-100x100.png",
       "128": "lib/openvost-200x200.png"
    },
+   "update_url": "https://openvost.org/extension/update.php",
    "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEApWTh/sfNCCYVLmv2jVb/Fd21vIm03vPqy+dD1zU9h6kcUUBSiK0DGDdsJACWdssJOhf7oli+WCj6kY7sNFdtJVkiLG5yXZ0ge68t/MJM4/mPdjKYYF9j/74h9ksNhJL9/vKSX+4roRH5fbd8eJU1ulmKZrTQUHf7nmvJ3S7iXDqK0We8pFn6t3uKJVXXPa1I08mD6lNfWoR4CuwWgCGPqvmrOqy4IgeuIKNjo5yGvFPTaexErcSHbkaOccix3tapvNjA6uI815qycZtdHmGpR5SzQj9s6tA3V7+ASvdj3gdbe7EF21jIZXRjxPDoO0BCyTqo1RkWr0Z8LWcfRhU8bQIDAQAB",
    "permissions": [ "downloads", "webRequest", "webRequestBlocking", "tabs", "storage", "notifications", "*://animevost.org/*", "*://api.animevost.org/*", "*://*.aniland.com/*", "*://*.zerocdn.com/*"],
    "web_accessible_resources" : ["js/inject.js", "img/cne.png", "img/cne_good.png", "lib/sound_push.wav", "js/openAnime.js"],
