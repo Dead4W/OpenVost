@@ -105,7 +105,9 @@ body .shortstory .shortstoryHead h2, body .shortstory .shortstoryHead h1 {
     min-height: 14px;
 }
 #anime {
+    z-index: 1;
     border: 1px solid #ffa20f;
+    position: relative;
 }
 #anime #player2 {
     border: none;
@@ -132,6 +134,8 @@ body .shortstory .shortstoryHead h2, body .shortstory .shortstoryHead h1 {
 }
 #anime .playerDownloadPanel {
     width: 696px;
+    top: 0;
+    z-index: 999999999;
 }
 #kinoplayer .playerDownloadPanel {
     width: 1000px;

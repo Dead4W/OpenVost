@@ -253,7 +253,7 @@ if( dle_news_id ) {
 	animPanel.appendChild(downloadButton2);
 
 	playerDownloadPanel.appendChild(animPanel);
-	$(playerDownloadPanel).insertBefore('#player2');
+	$('#anime').append(playerDownloadPanel);
 }
 
 var startPlayTime = $.cookie(window.location.pathname + "/time");
