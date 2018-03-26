@@ -1,4 +1,5 @@
 $('#player2').html('');
+$('#player').get(0).outerHTML = '<div class="openvost-helperKino"><div id="player"></div></div>';
 
 var st = {
     "default": "#07b02206306e07407206c05f06c06906e06502203a07b00a02206207506606606c06906e06506306f06c06f07202203a02206606606606606606602202c00a02206802203a03402c02206206705f06f02203a03002c00a02206306f06c06f07205f06c06f06106402203a02203002202c00a02206206705f06102203a03002e03102c00a02206106c06c05f06102203a03102c00a02206c06f06106405f06102203a03002e03302c00a02207306805f06102203a03002e03402c00a02206306f06c06f07205f06106c06c02203a02203303703303703303702202c00a02206306f06c06f07205f07006c06107902203a02203503903703406106302207d02c00a02206306e07407206c06f07507406806506906706807402203a03303902c00a02206306e07407206c06206706306f06c06f07202203a02203306403306403306402202c00a02206306e07407206c06206706106c07006806103102203a03002e03702c00a02206306e07407206c05f07007206f06306506e07402203a07b02206306f06c06f07202203a02206606606606606606602207d02c00a02206306e07407206c05f07207506e05f07606f06c07506d06502203a07b02206802203a03602c02206306f06c06f07202203a02206306306306306306302202c02207702203a03607d02c00a02206e06f07406507306206706306f06c06f07202203a02203002202c00a02206e06f05f06802203a03303903002c00a02206306e07407206c05f06207506606606507202203a07b02206906306f06e02203a02203102202c02206306f06c06f07202203a02206606606606606606602202c02206306506e07406507202203a02203102207d02c00a02207307407206506106d02203a03102c00a02206e06f05f07702203a03603903402c00a02206306e07407206c05f07207506e02203a07b02206906306f06e02203a03002c02206802203a03602c02206306f06c06f07202203a02206306306306306306302202c02207702203a03602c02206d06107206706906e06c06506607402203a02d03207d02c00a02206306e07407206c05f06607506c06c02203a07b02206906306f06e02203a02203202202c02207306805f06102203a03002e03402c02207306802203a02203102202c02206d06107206706906e06c06506607402203a03207d02c00a02206306f06e07407206f06c07302203a02207006c06107902c07c02c07406906d06505f07006c06107902c06c06906e06502c07406906d06505f06206106306b02c07606f06c07506d06502c07606f06c06206107206c06906e06502c07c02c06607506c06c02c07307406107207402c07007206f06306506e07402c06207506606606507202c07207506e05f06c06906e06502c07207506e05f07606f06c07506d06502202c00a02206306e07407206c05f07006c06107902203a07b02207306805f06102203a03002e03402c02207306306106c06502203a03102e03502c02206d06107206706906e07206906706807402203a03103002c02206106c07006806102203a03002e03902c02206906306f06e02203a02203102202c02207306802203a02203102202c02206d06107206706906e06c06506607402203a03103307d02c00a02206306e07407206c06806906406502203a03102c02206306e07407206c05f07306507006107206107406f07202203a07b02207306306106c06502203a03202e03102c02206d06107206706906e07406f07002203a03202c02206106c07006806102203a03002e03302c02206306f06c06f07202203a02203002207d02c00a02206306e07407206c05f06806402203a07b02206906306f06e02203a02203c06903e03c06203e04804403c02f06203e03c02f06903e02202c02207306306106c06502203a03102e03307d02c00a02207306906402203a02203103603902d03103203303702202c02206306e07407206c05f07406906d06505f06206106306b02203a07b02206906306f06e02203a02203302202c02207306306106c06502203a03102e03102c02206d06107206706906e07406f07002203a03102c02206d06107206706906e07206906706807402203a03402c02206d06107206706906e06206f07407406f06d02203a03207d02c00a02206306e07407206c06206706607506c06c02203a03102c02206206706306f06c06f07202203a02206606606606606606602202c02206d02203a02207606906406506f02202c02206306e07407206c05f07307406107207402203a07b02206206702203a02203102202c02206206705f06802203a03803002c02206206705f06102203a03002e03103502c02206906306f06e02203a02203102202c02207306306106c06503202203a03202e03802c02206206705f07702203a03803002c02206206705f07306802203a02203102207d02c00a02206306e07407206c05f07606f06c07506d06502203a07b02207306805f06102203a03002e03402c02207306306106c06502203a03102e03102c02206d06107206706906e07406f07002203a03102c02206906306f06e02203a02203102202c02207306802203a02203102202c02206d06107206706906e06c06506607402203a03107d02c00a02206306e07407206c05f07406906d06505f07006c06107902203a07b02206206705f06f02203a03002c02206d06107206706906e07406f07002203a03102c02207306805f06206c07507202203a03103002c02206d06107206706906e06206f07407406f06d02203a03202c02206906306f06e02203a02203302202c02207306306106c06502203a03102e03102c02206206705f07306802203a02203102202c02206d06107206706906e06c06506607402203a03207d02c00a02207106806906406506607506c06c02203a03102c02206107507406f02203a02206e06f06e06502202c02207007206f02203a03102c02206306e07407206c05f07606f06c06206107206c06906e06502203a07b02206802203a03402c02206d06107206706906e07206906706807402203a03202c02206106c06c05f06102203a03102c02206306f06c06f07205f06c06f06106402203a02203503903703406106302202c02207702203a03603002c02206306f06c06f07205f06106c06c02203a02203303703303703303702207d02c00a02206607306306106c06502203a02203202202c02206c06106e06702203a02207207502202c02206806906406506106c07706107907302203a03102c00a00a02206507606506e07407302203a07b02207006c06107902203a02206807407407003a02f02f07006c06107902e06106e06906c06106e06402e06f07206702f07307406107402e07006807003f06906403d03203103403703403003703503903602202c02207307406107207402203a02206807407407003a02f02f07006c06107902e06106e06906c06106e06402e06f07206702f07307406107402e07006807003f06906403d03203103403703403003703503903602207d07d",
@@ -14,8 +15,7 @@ function addVideoUrl(id,url) {
 
     var currentPlayer = activePlayer === "player2" ? player : kinoPlayer;
     if( currentPlayer.Get('episode_id') == id ) {
-        if( currentPlayer.Get('file') === "" && ( currentPlayer.Get('auto_play') || currentPlayer.getStatus() === 3 ) ) {
-            currentPlayer.Stop();
+        if( currentPlayer.Get('file') === "" ) {
             currentPlayer.Play(goodVideoUrls[id].join('|'));
         } else {
             currentPlayer.Set('file',goodVideoUrls[id].join('|'));
@@ -24,7 +24,7 @@ function addVideoUrl(id,url) {
 }
 function badFindServers(id) {
     var currentPlayer = activePlayer === "player2" ? player : kinoPlayer;
-    if( +currentPlayer.Get('episode_id') === +id ) {
+    if( currentPlayer.Get('episode_id') == id ) {
         window.postMessage({
             type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
             id: id
@@ -55,10 +55,6 @@ function open_vost(id,snum,autoPlay,startPlayTime) {
         num = 0
     }
 
-    if( $("#p" + snum).hasClass('active') ) {
-        appendContinueDiv('player2');
-    }
-
     $('.active').removeClass('active');
     $('#scrolltwo').scrollTo("#p" + num, 500, {
         axis: 'x'
@@ -85,13 +81,20 @@ function open_vost(id,snum,autoPlay,startPlayTime) {
         player.Set('repeat',autoPlay);
         player.Stop();
     } else {
+        $('#player2').html('');
         player = new Uppod({
             m: "video",
             st: st.default,
             uid: 'player2',
             poster: poster,
             h: "390",
-            start: startPlayTime ? startPlayTime : 0
+			w: "695",
+            start: startPlayTime ? startPlayTime : 0,
+            onReady: function(uppod){
+                if( $("#p" + snum).hasClass('active') ) {
+                    appendContinueDiv('player2');
+                }
+            }
         });
         constructPlayerOpenvostData('#player2',player);
     }
@@ -104,21 +107,12 @@ function open_vost(id,snum,autoPlay,startPlayTime) {
         } else {
             player.Set('file',goodVideoUrls[id].join('|'))
         }
-    } else {
-        window.postMessage({
-            type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
-            id: id
-        }, "*");
     }
 }
 function open_vost_kino(id,snum,autoPlay,startPlayTime) {
     var num = snum - 2;
     if (num < 0) {
         num = 0
-    }
-
-    if( $("#" + snum).hasClass('kactive') ) {
-        appendContinueDiv('player');
     }
 
     $('.kactive').removeClass('kactive');
@@ -147,7 +141,12 @@ function open_vost_kino(id,snum,autoPlay,startPlayTime) {
             st: st.default,
             uid: "player",
             poster: poster,
-            h: "559"
+            h: "559",
+            onReady: function(uppod){
+                if( $("#" + snum).hasClass('kactive') ) {
+                    appendContinueDiv('player');
+                }
+            }
         });
         constructPlayerOpenvostData('#player',kinoPlayer);
     }
@@ -161,11 +160,6 @@ function open_vost_kino(id,snum,autoPlay,startPlayTime) {
         } else {
             kinoPlayer.Set('file',goodVideoUrls[id].join('|'))
         }
-    } else {
-        window.postMessage({
-            type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
-            id: id
-        }, "*");
     }
 }
 function appendContinueDiv(playerName) {
@@ -209,6 +203,13 @@ function constructPlayerOpenvostData(find,playerUppod) {
         player: playerUppod,
     };
 }
+function downloadEpisode(href,name) {
+    window.postMessage({
+        type: "FROM_PAGE_TO_OPENVOST_DOWNLOAD_FILE",
+        url: href,
+        filename: name
+    }, "*");
+}
 
 if( typeof(dle_news_id) === "undefined" ) {
     let data = window.location.pathname.match(/tip\/[^\/]+\/(\d+)-/);
@@ -223,6 +224,34 @@ if( dle_news_id ) {
         $('.current-rating').text(rating).get(0).style.width = rating*10 + '%';
         $('#vote-num-id-' + dle_news_id).parent().html('(<span id="vote-num-id-' + dle_news_id + '">' + rating + '/10</span>)');
     });
+
+	//download panel
+	var playerDownloadPanel = document.createElement('div');
+	playerDownloadPanel.className = 'playerDownloadPanel';
+
+	var animPanel = document.createElement('div');
+	animPanel.className = 'animPanel';
+
+	var downloadButton1 = document.createElement('a');
+	downloadButton1.className = 'downloadButton';
+	downloadButton1.onclick = function() {
+	    let finder = '.epizode.active';
+        downloadEpisode('http://file.aniland.org/' + parseAjaxFunction($(finder))[0] + '.mp4','openvost anime/' + $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-') + 'anime/' + $(finder).text().replace(' серия','ep') + '-480-sd.mp4');
+    };
+	downloadButton1.innerHTML = 'Скачать 480p';
+	var downloadButton2 = document.createElement('a');
+	downloadButton2.className = 'downloadButton';
+	downloadButton2.onclick = function() {
+        let finder = '.epizode.active';
+        downloadEpisode('http://file.aniland.org/720/' + parseAjaxFunction($(finder))[0] + '.mp4','openvost anime/' + $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-') + 'anime/' + $(finder).text().replace(' серия','ep') + '-720-hd.mp4');
+    };
+	downloadButton2.innerHTML = 'Скачать 720p (HD)';
+
+	animPanel.appendChild(downloadButton1);
+	animPanel.appendChild(downloadButton2);
+
+	playerDownloadPanel.appendChild(animPanel);
+	$('#anime').append(playerDownloadPanel);
 }
 
 var startPlayTime = $.cookie(window.location.pathname + "/time");
@@ -298,9 +327,14 @@ $(".functionPanel div").css('width','25%').first().before("<a href=\"#download\"
         return false;
     }
     var name = $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-') + $('.epizode.active').text().replace(' серия','ep');
-
-    var href = $('#player2 video').get(0).currentSrc + '?openvost_savemoment=' + encodeURI(player.CurrentTime()) + '&name=' + encodeURI(name);
-    window.open(href,'save moment window',"width=200,height=200");
+    var iframe = document.createElement('iframe');
+    iframe.src = $('#player2 video').get(0).currentSrc + '?openvost_savemoment=' + encodeURI(player.currentTime()) + '&name=' + encodeURI(name);
+    iframe.style.display = 'none';
+    iframe.className = 'openvost-save-moment-iframe';
+    iframe.onload = function() {
+        iframe.remove();
+    };
+    document.body.appendChild(iframe);
 });
 
 $('#kinoon').magnificPopup({
@@ -310,12 +344,12 @@ $('#kinoon').magnificPopup({
     closeBtnInside:false,
     callbacks: {
         open: function() {
-            var rr = $.cookie(window.location.pathname);
+            var pathname = $.cookie(window.location.pathname);
             $( "#player2" ).hide();
-            if(typeof rr == "undefined")
-                rr=0;
-            $('#scroll').scrollTo('#' + rr, 300, {axis:'x'});
-            document.getElementById(rr).click();
+            if(typeof pathname == "undefined")
+                pathname = 0;
+            $('#scroll').scrollTo('#' + pathname, 300, {axis:'x'});
+            document.getElementById(pathname).click();
 
             if( player ) {
                 player.Pause();
@@ -359,6 +393,13 @@ document.addEventListener('end', function () {
     }
 }, false);
 document.addEventListener('play', function () {
+    var currentPlayer = activePlayer === 'player2' ? player : kinoPlayer;
+    if( currentPlayer.Get('file') === "" || goodVideoUrls[currentPlayer.Get('episode_id')] === undefined ) {
+        window.postMessage({
+            type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
+            id: currentPlayer.Get('episode_id')
+        }, "*");
+    }
     $('.continuePlayer').remove();
 }, false);
 
@@ -372,3 +413,7 @@ setInterval(function() {
         });
     }
 },3000);
+
+setInterval(function() {
+
+},10000);

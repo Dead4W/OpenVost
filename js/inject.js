@@ -99,6 +99,20 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
     });
 }
 
+/*
+$(document).ready(function() {
+    if( $('#blockRandomPost a').length ) {
+        var randDiv = $('#blockRandomPost a')[0];
+        randDiv.addEventListener('mouseover', function(){
+            window.linkOver(this)
+        });
+        randDiv.addEventListener('mouseout', function(){
+            window.linkOut(this)
+        });
+    }
+});
+*/
+
 var evObj = document.createEvent('Events');
 evObj.initEvent('openvost-inject', true, true);
 document.dispatchEvent(evObj);

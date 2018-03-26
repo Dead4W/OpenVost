@@ -104,6 +104,14 @@ body .shortstory .shortstoryHead h2, body .shortstory .shortstoryHead h1 {
 .shortstoryFuter {
     min-height: 14px;
 }
+#anime {
+    z-index: 1;
+    border: 1px solid #ffa20f;
+    position: relative;
+}
+#anime #player2 {
+    border: none;
+}
 #player,#player2 {
     position: relative;
 }
@@ -123,4 +131,90 @@ body .shortstory .shortstoryHead h2, body .shortstory .shortstoryHead h1 {
 }
 #list .series {
     cursor: pointer;
+}
+#anime .playerDownloadPanel {
+    width: 696px;
+    top: 0;
+    z-index: 999999999;
+}
+#kinoplayer .playerDownloadPanel {
+    width: 1000px;
+}
+.playerDownloadPanel {
+    width: 696px;
+    position: absolute;
+    margin: auto;
+    display: block;
+    z-index: 3;
+	overflow: hidden;
+}
+.playerDownloadPanel .animPanel {
+    padding-top: 3px;
+    height: 35px;
+    position: relative;
+    background: #f9be6e;
+    opacity: 0.9;
+    margin: auto;
+    width: 370px;
+}
+.playerDownloadPanel .animPanel:after {
+    content: 'Скачать';
+    display: block;
+    margin: auto;
+    width: 87px;
+    color: #ce750d;
+    font-weight: bold;
+    font-size: 14px;
+    text-transform: uppercase;
+    text-align: center;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    cursor: pointer;
+    background: #f9be6e;
+    opacity: 0.9;
+    margin-top: 5px;
+    padding-top: 1px;
+}
+.playerDownloadPanel .downloadButton {
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 18px;
+    padding: 4px 0;
+    height: 20px;
+    width: 164px;
+    display: inline-block;
+    position: relative;
+    background: #f9d9ad;
+    background: -moz-linear-gradient(top,#f9d9ad 0%,#facb82 100%);
+    background: -webkit-gradient(linear,left top,left bottom,color-stop(0%,#f9d9ad),color-stop(100%,#facb82));
+    background: -webkit-linear-gradient(top,#f9d9ad 0%,#facb82 100%);
+    background: -o-linear-gradient(top,#f9d9ad 0%,#facb82 100%);
+    background: -ms-linear-gradient(top,#f9d9ad 0%,#facb82 100%);
+    background: linear-gradient(to bottom,#f9d9ad 0%,#facb82 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9d9ad',endColorstr='#facb82',GradientType=0 );
+    border: 1px solid #ffa20f;
+    left: 0;
+    margin-left: 12px;
+    color: #ce750d;
+    text-align: center;
+    text-decoration: none;
+}
+.playerDownloadPanel .downloadButton:hover {
+    text-decoration: underline;
+}
+.playerDownloadPanel .downloadPanelShowButton, .animPanel {
+    -webkit-transition: transform 0.6s;
+    transition: transform 0.6s;
+	transform: translateY(-38px);
+}
+.playerDownloadPanel .animPanel:hover {
+    -webkit-transform: translateY(0px);
+    transform: translateY(0px);
+}
+#kinoplayer #player {
+    border: none;
+    line-height: 0!important;
+}
+.openvost-helperKino {
+    border: 2px solid #ffa400;
 }
