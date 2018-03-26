@@ -4,7 +4,7 @@ String.prototype.hashCode = function() {
     for (i = 0; i < this.length; i++) {
         chr   = this.charCodeAt(i);
         hash  = ((hash << 5) - hash) + chr;
-        hash |= 0; // Convert to 32bit integer
+        hash |= 0;
     }
     return hash + "_" + this.length;
 };
@@ -12,10 +12,6 @@ String.prototype.hashCode = function() {
 var audio = document.createElement('audio');
 audio.src = chrome.extension.getURL('lib/sound_push.wav');
 audio.volume = 0.13;
-
-setInterval(function() {
-    console.log(chrome.extension.getViews());
-},5000);
 
 chrome.runtime.onMessage.addListener(function(request) {
     if (request.type === "download_file") {
@@ -25,7 +21,6 @@ chrome.runtime.onMessage.addListener(function(request) {
         });
     }
 });
-
 
 Array.prototype.remove = function(value) {
     var idx = this.indexOf(value);
@@ -106,12 +101,14 @@ function checkAnime() {
                 let currentAnimeInfo = data.animeTrackList[ animeTrackIndex ];
                 data.animeTrackList.remove(data.animeTrackList[ animeTrackIndex ]);
                 data.animeTrackList.push(currentAnimeInfo);
-                console.log(currentAnimeInfo);
-                console.log(data.animeTrackList);
             }
         }
         chrome.storage.sync.set({animeTrackList:data.animeTrackList});
     });
 }
 
-setInterval(checkAnime,60000);
+chrome.storage.sync.get(['animeTrackList'],function(data) {
+    if( data.animeTrackList.length ) {
+        setInterval(checkAnime,60000);
+    }
+});

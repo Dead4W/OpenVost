@@ -211,3 +211,10 @@ body .shortstory .shortstoryHead h2, body .shortstory .shortstoryHead h1 {
     -webkit-transform: translateY(0px);
     transform: translateY(0px);
 }
+#kinoplayer #player {
+    border: none;
+    line-height: 0!important;
+}
+.openvost-helperKino {
+    border: 2px solid #ffa400;
+}
