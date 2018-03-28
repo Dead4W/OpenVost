@@ -1,4 +1,4 @@
-if( location.search.match(/\?openvost_savemoment/) && parent !== window ) {
+if( parent !== window ) {
     function parseURLParams(url) {
         var queryStart = url.indexOf("?") + 1,
             queryEnd   = url.indexOf("#") + 1 || url.length + 1,

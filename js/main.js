@@ -1,133 +1,136 @@
-String.prototype.hashCode = function() {
-    var hash = 0, i, chr;
-    if (this.length === 0) return hash;
-    for (i = 0; i < this.length; i++) {
-        chr   = this.charCodeAt(i);
-        hash  = ((hash << 5) - hash) + chr;
-        hash |= 0; // Convert to 32bit integer
+document.addEventListener("DOMContentLoaded", function() {
+    String.prototype.hashCode = function() {
+        var hash = 0, i, chr;
+        if (this.length === 0) return hash;
+        for (i = 0; i < this.length; i++) {
+            chr   = this.charCodeAt(i);
+            hash  = ((hash << 5) - hash) + chr;
+            hash |= 0; // Convert to 32bit integer
+        }
+        return hash + "_" + this.length;
+    };
+    Array.prototype.remove = function(value) {
+        var idx = this.indexOf(value);
+        if (idx !== -1) {
+            return this.splice(idx, 1);
+        }
+        return false;
+    };
+    function injectScript(actualCode) {
+        var script = document.createElement('script');
+        script.textContent = actualCode;
+        (document.head||document.documentElement).appendChild(script);
+        script.parentNode.removeChild(script);
     }
-    return hash + "_" + this.length;
-};
-Array.prototype.remove = function(value) {
-    var idx = this.indexOf(value);
-    if (idx !== -1) {
-        return this.splice(idx, 1);
+    injectScript('ajax2 = function(id,snum) {var num=snum -2; if (num<0) {num=0} $(\'.active\').removeClass(\'active\'); $(\'#scrolltwo\').scrollTo("#p" +num , 500, {axis:\'x\'}); $("#p" +snum).addClass(\'active\');}');
+
+    function ShowLoading() {
+        injectScript("ShowLoading();");
     }
-    return false;
-};
-function injectScript(actualCode) {
-    var script = document.createElement('script');
-    script.textContent = actualCode;
-    (document.head||document.documentElement).appendChild(script);
-    script.parentNode.removeChild(script);
-}
-function ShowLoading() {
-    injectScript("ShowLoading();");
-}
-function HideLoading() {
-    injectScript("HideLoading();");
-}
-function bindTrackButton() {
-    var animeTrackIcons = document.getElementsByClassName('checkNewEpisodeShortstory');
-    for( var i = 0;i<animeTrackIcons.length;i++ ) {
-        var trackedAnime = animeTrackIcons[i];
+    function HideLoading() {
+        injectScript("HideLoading();");
+    }
+    function bindTrackButton() {
+        var animeTrackIcons = document.getElementsByClassName('checkNewEpisodeShortstory');
+        for( var i = 0;i<animeTrackIcons.length;i++ ) {
+            var trackedAnime = animeTrackIcons[i];
 
-        trackedAnime.children[0].onmouseover = function(e) {
-            var elem = e.currentTarget;
-            elem.src = elem.parentElement.dataset.status === "true" ? imgCheckEpisode : imgCheckEpisodeGood;
-        };
-        trackedAnime.children[0].onmouseout = function(e) {
-            var elem = e.currentTarget;
-            elem.src = elem.parentElement.dataset.status === "true" ? imgCheckEpisodeGood : imgCheckEpisode;
-        };
+            trackedAnime.children[0].onmouseover = function(e) {
+                var elem = e.currentTarget;
+                elem.src = elem.parentElement.dataset.status === "true" ? imgCheckEpisode : imgCheckEpisodeGood;
+            };
+            trackedAnime.children[0].onmouseout = function(e) {
+                var elem = e.currentTarget;
+                elem.src = elem.parentElement.dataset.status === "true" ? imgCheckEpisodeGood : imgCheckEpisode;
+            };
 
-        trackedAnime.onclick = function(e) {
-            var elem = e.currentTarget;
-            var id = +elem.dataset.id;
-            ShowLoading();
-            chrome.storage.sync.get(['animeTrackList'],function(data) {
-                if(  data.animeTrackList === undefined ) {
-                    data.animeTrackList = [];
-                    chrome.storage.sync.set({animeTrackList:data.animeTrackList});
-                }
+            trackedAnime.onclick = function(e) {
+                var elem = e.currentTarget;
+                var id = +elem.dataset.id;
+                ShowLoading();
+                chrome.storage.sync.get(['animeTrackList'],function(data) {
+                    if(  data.animeTrackList === undefined ) {
+                        data.animeTrackList = [];
+                        chrome.storage.sync.set({animeTrackList:data.animeTrackList});
+                    }
 
-                var xhr = new XMLHttpRequest();
-                xhr.open("POST", 'https://api.animevost.org/v1/info', true);
-                xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("POST", 'https://api.animevost.org/v1/info', true);
+                    xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 
-                xhr.onreadystatechange = function() {
-                    if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                        var result = JSON.parse(xhr.responseText);
+                    xhr.onreadystatechange = function() {
+                        if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                            var result = JSON.parse(xhr.responseText);
 
-                        var episodes = result.data[0].series === "" ? [] : JSON.parse(result.data[0].series.replace(/'/g,'"'));
-                        var episodesNames = [];
-                        for( name in episodes ) {
-                            episodesNames.push(name);
-                        }
-                        episodesNames = episodesNames.join('-').replace(/\s+/g,'');
-
-                        var success = false;
-                        for( var i=0;i<data.animeTrackList.length;i++ ) {
-                            if( data.animeTrackList[i].id === id ) {
-                                data.animeTrackList[i].status = !elem.dataset.status === "true";
-                                if( data.animeTrackList[i].status === false ) {
-                                    data.animeTrackList.remove(data.animeTrackList[i]);
-                                } else {
-                                    data.animeTrackList[i].hash = episodesNames.hashCode();
-                                }
-                                success = true;
-                                break;
+                            var episodes = result.data[0].series === "" ? [] : JSON.parse(result.data[0].series.replace(/'/g,'"'));
+                            var episodesNames = [];
+                            for( name in episodes ) {
+                                episodesNames.push(name);
                             }
-                        }
-                        if( !success && elem.dataset.status === "false" ) {
-                            data.animeTrackList.push({
-                                id: id,
-                                hash: episodesNames.hashCode(),
-                                status: true
+                            episodesNames = episodesNames.join('-').replace(/\s+/g,'');
+
+                            var success = false;
+                            for( var i=0;i<data.animeTrackList.length;i++ ) {
+                                if( data.animeTrackList[i].id === id ) {
+                                    data.animeTrackList[i].status = !elem.dataset.status === "true";
+                                    if( data.animeTrackList[i].status === false ) {
+                                        data.animeTrackList.remove(data.animeTrackList[i]);
+                                    } else {
+                                        data.animeTrackList[i].hash = episodesNames.hashCode();
+                                    }
+                                    success = true;
+                                    break;
+                                }
+                            }
+                            if( !success && elem.dataset.status === "false" ) {
+                                data.animeTrackList.push({
+                                    id: id,
+                                    hash: episodesNames.hashCode(),
+                                    status: true
+                                });
+                            }
+
+                            chrome.storage.sync.set({"animeTrackList":data.animeTrackList},function() {
+                                HideLoading();
+                                var countTrackList = 0;
+                                for( var i=0;i<data.animeTrackList.length;i++ ) {
+                                    if( data.animeTrackList[i].status ) {
+                                        countTrackList++;
+                                    }
+                                }
+                                document.getElementsByClassName('trackedAnimeHead')[0].title = 'Количество отслеживаемых аниме: ' + countTrackList;
+                                document.getElementsByClassName('trackedAnimeHead')[0].text = 'Отслеживаемые (' + countTrackList + ')';
+                                elem.children[0].src = elem.dataset.status === "true" ? imgCheckEpisode : imgCheckEpisodeGood;
+                                elem.dataset.status = elem.dataset.status === "true" ? "false" : "true";
                             });
                         }
-
-                        chrome.storage.sync.set({"animeTrackList":data.animeTrackList},function() {
-                            HideLoading();
-                            var countTrackList = 0;
-                            for( var i=0;i<data.animeTrackList.length;i++ ) {
-                                if( data.animeTrackList[i].status ) {
-                                    countTrackList++;
-                                }
-                            }
-                            document.getElementsByClassName('trackedAnimeHead')[0].title = 'Количество отслеживаемых аниме: ' + countTrackList;
-                            document.getElementsByClassName('trackedAnimeHead')[0].text = 'Отслеживаемые (' + countTrackList + ')';
-                            elem.children[0].src = elem.dataset.status === "true" ? imgCheckEpisode : imgCheckEpisodeGood;
-                            elem.dataset.status = elem.dataset.status === "true" ? "false" : "true";
-                        });
-                    }
-                };
-                xhr.send("id=" + id);
-            });
+                    };
+                    xhr.send("id=" + id);
+                });
+            }
         }
+
+    }
+    function injectScriptFile(file, callback) {
+        var th = document.getElementsByTagName('body')[0];
+        var s = document.createElement('script');
+        s.setAttribute('type', 'text/javascript');
+        s.setAttribute('src', file);
+        th.appendChild(s);
+        if( typeof(callback) === "function" ) {
+            s.onload = callback;
+        } else return s;
+    }
+    function Confirm(msg) {
+        return confirm(msg);
     }
 
-}
-function injectScriptFile(file, callback) {
-    var th = document.getElementsByTagName('body')[0];
-    var s = document.createElement('script');
-    s.setAttribute('type', 'text/javascript');
-    s.setAttribute('src', file);
-    th.appendChild(s);
-    if( typeof(callback) === "function" ) {
-        s.onload = callback;
-    } else return s;
-}
-function Confirm(msg) {
-    return confirm(msg);
-}
+    var imgCheckEpisode = chrome.extension.getURL('img/cne.png');
+    var imgCheckEpisodeGood = chrome.extension.getURL('img/cne_good.png');
 
-var imgCheckEpisode = chrome.extension.getURL('img/cne.png');
-var imgCheckEpisodeGood = chrome.extension.getURL('img/cne_good.png');
-
-/* hide info banner */
-var textBanner = document.getElementsByClassName('banerTopTwo')[0];
-if( textBanner !== undefined ) {
+    /* hide info banner */
+    var textBanner = document.getElementsByClassName('banerTopTwo')[0];
+    if( textBanner !== undefined ) {
         var hashBanner = textBanner.innerHTML.hashCode();
         chrome.storage.sync.get(['banner'],function(data) {
             if( data.banner === undefined ) {
@@ -160,298 +163,299 @@ if( textBanner !== undefined ) {
                 textBanner.appendChild(closeBannerIcon);
             }
         });
-}
+    }
 
 //player inject
-var videolinks = {};
-if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
-    window.addEventListener("message", function(event) {
-        if( event.type === 'message' ) {
-            if( event.data.type === 'FROM_PAGE_TO_OPENVOST_CHECK_SERVERS' ) {
-                let id = +event.data.id;
-                let goodServers = false;
-                if( !id ) {
-                    return;
-                }
-                let badServers = 0;
-                if( typeof(videolinks[id]) !== undefined ) {
-                    var videolinksEpisode = [
-                        "http://video.aniland.org/720/" + id + ".mp4",
-                        "http://tk.aniland.org/720/" + id + ".mp4",
-                        "http://new.aniland.org/720/" + id + ".mp4",
-                        "http://mp4.aniland.org/720/" + id + ".mp4",
-                        "http://fast.aniland.org/720/" + id + ".mp4",
+    var videolinks = {};
+    if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
+        window.addEventListener("message", function(event) {
+            if( event.type === 'message' ) {
+                if( event.data.type === 'FROM_PAGE_TO_OPENVOST_CHECK_SERVERS' ) {
+                    let id = +event.data.id;
+                    let goodServers = false;
+                    if( !id ) {
+                        return;
+                    }
+                    let badServers = 0;
+                    if( typeof(videolinks[id]) !== undefined ) {
+                        var videolinksEpisode = [
+                            "http://video.aniland.org/720/" + id + ".mp4",
+                            "http://tk.aniland.org/720/" + id + ".mp4",
+                            "http://new.aniland.org/720/" + id + ".mp4",
+                            "http://mp4.aniland.org/720/" + id + ".mp4",
+                            "http://fast.aniland.org/720/" + id + ".mp4",
 
-                        "http://video.aniland.org/" + id + ".mp4",
-                        "http://tk.aniland.org/" + id + ".mp4",
-                        "http://new.aniland.org/" + id + ".mp4",
-                        "http://fast.aniland.org/" + id + ".mp4",
-                        "http://mp4.aniland.org/" + id + ".mp4"
-                    ];
+                            "http://video.aniland.org/" + id + ".mp4",
+                            "http://tk.aniland.org/" + id + ".mp4",
+                            "http://new.aniland.org/" + id + ".mp4",
+                            "http://fast.aniland.org/" + id + ".mp4",
+                            "http://mp4.aniland.org/" + id + ".mp4"
+                        ];
 
-                    let xhr_api = new XMLHttpRequest();
-                    xhr_api.open('POST', 'https://api.animevost.org/v1/videolinks', true);
-                    xhr_api.onload = function() {
-                        if( xhr_api.readyState == 4 && xhr_api.status == 200 ) {
-                            let videolinksApi = JSON.parse(xhr_api.responseText);
-                            for( let videoLinkObjName in videolinksApi ) {
-                                let videoLinkObj = videolinksApi[videoLinkObjName];
-                                for( var i =0;i<videoLinkObj.length;i++ ) {
-                                    if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 && !videoLinkObj[i].match(/:hls:/) ) {
-                                        checkUrlServerRequest(videoLinkObj[i]);
+                        let xhr_api = new XMLHttpRequest();
+                        xhr_api.open('POST', 'https://api.animevost.org/v1/videolinks', true);
+                        xhr_api.onload = function() {
+                            if( xhr_api.readyState == 4 && xhr_api.status == 200 ) {
+                                let videolinksApi = JSON.parse(xhr_api.responseText);
+                                for( let videoLinkObjName in videolinksApi ) {
+                                    let videoLinkObj = videolinksApi[videoLinkObjName];
+                                    for( var i =0;i<videoLinkObj.length;i++ ) {
+                                        if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 && !videoLinkObj[i].match(/:hls:/) ) {
+                                            checkUrlServerRequest(videoLinkObj[i]);
+                                        }
                                     }
                                 }
                             }
-                        }
-                    };
-                    xhr_api.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                    xhr_api.send('id=' + id);
-                } else {
-                    videolinksEpisode = videolinks[id];
-                }
-
-                let checkUrlServerRequest = function(videolink) {
-                    let xhr = new XMLHttpRequest();
-                    xhr.open('HEAD', videolink, true);
-                    xhr.timeout = 15000;
-                    if( !videolink.match(/drek\./) ) {
-                        xhr.setRequestHeader('Cache-Control', 'no-cache');
+                        };
+                        xhr_api.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                        xhr_api.send('id=' + id);
+                    } else {
+                        videolinksEpisode = videolinks[id];
                     }
-                    let xhr_error = function() {
-                        badServers++;
-                        if( badServers >= videolinksEpisode.length && !goodServers ) {
-                            if( typeof(event.data.try) == "undefined" ) {
-                                event.data.try = 0;
-                            }
-                            event.data.try++;
-                            if( event.data.try >= 3 ) {
-                                console.warn('[OpenVost] error find servers');
-                                injectScript('badFindServers(' + id + ')');
-                            } else {
-                                window.postMessage({
-                                    type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
-                                    id: id,
-                                    try: event.data.try
-                                }, "*");
-                            }
-                        }
-                    };
-                    xhr.onload = function (e) {
-                        if ( xhr.status === 200 ) {
-                            injectScript('addVideoUrl(' + id + ',"' + videolink + '")');
-                            goodServers = true;
-                        } else {
-                            xhr_error();
-                        }
-                    };
-                    xhr.onerror = xhr_error;
-                    xhr.ontimeout = xhr_error;
-                    xhr.send(null);
-                };
 
-                for( var i =0;i<videolinksEpisode.length;i++ ) {
-                    checkUrlServerRequest(videolinksEpisode[i]);
+                    let checkUrlServerRequest = function(videolink) {
+                        let xhr = new XMLHttpRequest();
+                        xhr.open('HEAD', videolink, true);
+                        xhr.timeout = 15000;
+                        if( !videolink.match(/drek\./) ) {
+                            xhr.setRequestHeader('Cache-Control', 'no-cache');
+                        }
+                        let xhr_error = function() {
+                            badServers++;
+                            if( badServers >= videolinksEpisode.length && !goodServers ) {
+                                if( typeof(event.data.try) == "undefined" ) {
+                                    event.data.try = 0;
+                                }
+                                event.data.try++;
+                                if( event.data.try >= 3 ) {
+                                    console.warn('[OpenVost] error find servers');
+                                    injectScript('badFindServers(' + id + ')');
+                                } else {
+                                    window.postMessage({
+                                        type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
+                                        id: id,
+                                        try: event.data.try
+                                    }, "*");
+                                }
+                            }
+                        };
+                        xhr.onload = function (e) {
+                            if ( xhr.status === 200 ) {
+                                injectScript('addVideoUrl(' + id + ',"' + videolink + '")');
+                                goodServers = true;
+                            } else {
+                                xhr_error();
+                            }
+                        };
+                        xhr.onerror = xhr_error;
+                        xhr.ontimeout = xhr_error;
+                        xhr.send(null);
+                    };
+
+                    for( var i =0;i<videolinksEpisode.length;i++ ) {
+                        checkUrlServerRequest(videolinksEpisode[i]);
+                    }
+                }
+                else if( event.data.type === 'FROM_PAGE_TO_OPENVOST_DOWNLOAD_FILE' ) {
+                    chrome.runtime.sendMessage({type: "download_file", options: {
+                        type: "basic",
+                        url: event.data.url,
+                        filename: event.data.filename
+                    }});
                 }
             }
-            else if( event.data.type === 'FROM_PAGE_TO_OPENVOST_DOWNLOAD_FILE' ) {
-                chrome.runtime.sendMessage({type: "download_file", options: {
-                    type: "basic",
-                    url: event.data.url,
-                    filename: event.data.filename
-                }});
-            }
-        }
-    });
+        });
 
-    var loadOpenAnime = function() {
-        injectScriptFile( chrome.extension.getURL('js/openAnime.js'));
-    };
+        var loadOpenAnime = function() {
+            injectScriptFile( chrome.extension.getURL('js/openAnime.js'));
+        };
 
-    injectScriptFile('http://old.play.aniland.org/HLS.js',loadOpenAnime);
-}
+        injectScriptFile('http://old.play.aniland.org/HLS.js',loadOpenAnime);
+    }
 
 //counters format
-if( document.getElementsByClassName('shortstoryHead').length ) {
-    var staticInfoRight = document.getElementsByClassName('staticInfoRight');
-    var counterTitlesRight = [
-        'Просмотров','Комментариев'
-    ];
-    var indexCounters;
-    for( indexCounters=0;indexCounters<staticInfoRight.length;indexCounters++ ) {
-        for( var indexInfoRight=0;indexInfoRight<staticInfoRight[indexCounters].children.length;indexInfoRight++ ) {
-            let elem = staticInfoRight[indexCounters].children[indexInfoRight];
-            if( indexInfoRight === 1 ) elem = elem.children[0];
-            elem.innerText = new Intl.NumberFormat('ru-RU').format(+elem.innerText);
-            elem.title = counterTitlesRight[indexInfoRight] + ': ' + elem.innerText;
+    if( document.getElementsByClassName('shortstoryHead').length ) {
+        var staticInfoRight = document.getElementsByClassName('staticInfoRight');
+        var counterTitlesRight = [
+            'Просмотров','Комментариев'
+        ];
+        var indexCounters;
+        for( indexCounters=0;indexCounters<staticInfoRight.length;indexCounters++ ) {
+            for( var indexInfoRight=0;indexInfoRight<staticInfoRight[indexCounters].children.length;indexInfoRight++ ) {
+                let elem = staticInfoRight[indexCounters].children[indexInfoRight];
+                if( indexInfoRight === 1 ) elem = elem.children[0];
+                elem.innerText = new Intl.NumberFormat('ru-RU').format(+elem.innerText);
+                elem.title = counterTitlesRight[indexInfoRight] + ': ' + elem.innerText;
+            }
         }
-    }
-    var staticInfoLeft = document.getElementsByClassName('staticInfoLeft');
-    var counterTitlesLeft = [
-        'Многоликий человек-проект','Дата последнего обновления'
-    ];
-    for( indexCounters=0;indexCounters<staticInfoLeft.length;indexCounters++ ) {
-        for( var indexInfoLeft=0;indexInfoLeft<staticInfoLeft[indexCounters].children.length;indexInfoLeft++ ) {
-            let elem = staticInfoLeft[indexCounters].children[indexInfoLeft];
-            if( indexInfoLeft === 0) elem = elem.children[0];
-            elem.title = counterTitlesLeft[indexInfoLeft];
+        var staticInfoLeft = document.getElementsByClassName('staticInfoLeft');
+        var counterTitlesLeft = [
+            'Многоликий человек-проект','Дата последнего обновления'
+        ];
+        for( indexCounters=0;indexCounters<staticInfoLeft.length;indexCounters++ ) {
+            for( var indexInfoLeft=0;indexInfoLeft<staticInfoLeft[indexCounters].children.length;indexInfoLeft++ ) {
+                let elem = staticInfoLeft[indexCounters].children[indexInfoLeft];
+                if( indexInfoLeft === 0) elem = elem.children[0];
+                elem.title = counterTitlesLeft[indexInfoLeft];
+            }
         }
-    }
 
-    document.getElementsByClassName('staticInfoLeftData')[0].title = 'Дата последнего обновления';
-}
+        document.getElementsByClassName('staticInfoLeftData')[0].title = 'Дата последнего обновления';
+    }
 
 //added icon for tracked anime
-chrome.storage.sync.get(['animeTrackList'],function(data) {
-    if( data.animeTrackList === undefined ) {
-        data.animeTrackList = [];
-        chrome.storage.sync.set({animeTrackList:data.animeTrackList});
-    }
-    var countTrackList = 0;
-    for( var i=0;i<data.animeTrackList.length;i++ ) {
-        if( data.animeTrackList[i].status ) {
-            countTrackList++;
+    chrome.storage.sync.get(['animeTrackList'],function(data) {
+        if( data.animeTrackList === undefined ) {
+            data.animeTrackList = [];
+            chrome.storage.sync.set({animeTrackList:data.animeTrackList});
         }
-    }
-    var trackedAnimeHeadLink = document.createElement('a');
-    trackedAnimeHeadLink.classList = 'loginLinkZ trackedAnimeHead';
-    trackedAnimeHeadLink.title = "Количество отслеживаемых аниме: " + countTrackList;
-    trackedAnimeHeadLink.href = "http://animevost.org/tracked";
-    trackedAnimeHeadLink.text = "Отслеживаемые (" + countTrackList + ")";
-
-    document.getElementsByClassName('loginLink')[0].insertBefore(trackedAnimeHeadLink, document.getElementsByClassName('loginLinkS')[0]);
-
-    var shortstoryShareElems = document.getElementsByClassName('shortstoryHead');
-    for( var i=0;i<shortstoryShareElems.length;i++ ) {
-        var elem = shortstoryShareElems[i].children[0];
-        var parent = shortstoryShareElems[i];
-        var id = +elem.id.match(/fav-id-(\d+)/)[1];
-        var isChecking = false;
-
-        for( var indexTrack=0;indexTrack<data.animeTrackList.length;indexTrack++ ) {
-            if( data.animeTrackList[indexTrack].id === id ) {
-                isChecking = data.animeTrackList[indexTrack].status;
-                break;
+        var countTrackList = 0;
+        for( var i=0;i<data.animeTrackList.length;i++ ) {
+            if( data.animeTrackList[i].status ) {
+                countTrackList++;
             }
         }
+        var trackedAnimeHeadLink = document.createElement('a');
+        trackedAnimeHeadLink.classList = 'loginLinkZ trackedAnimeHead';
+        trackedAnimeHeadLink.title = "Количество отслеживаемых аниме: " + countTrackList;
+        trackedAnimeHeadLink.href = "http://animevost.org/tracked";
+        trackedAnimeHeadLink.text = "Отслеживаемые (" + countTrackList + ")";
 
-        var checkNewEpisode = document.createElement('img');
-        checkNewEpisode.classList = 'checkNewEpisode';
-        checkNewEpisode.title = 'Отслеживать новые серий';
-        checkNewEpisode.src = isChecking ? imgCheckEpisodeGood : imgCheckEpisode;
+        document.getElementsByClassName('loginLink')[0].insertBefore(trackedAnimeHeadLink, document.getElementsByClassName('loginLinkS')[0]);
 
-        var checkNewEpisodeShortstory = document.createElement('a');
-        checkNewEpisodeShortstory.classList = 'shortstoryShare checkNewEpisodeShortstory';
-        checkNewEpisodeShortstory.dataset.id = id;
-        checkNewEpisodeShortstory.dataset.status = isChecking;
+        var shortstoryShareElems = document.getElementsByClassName('shortstoryHead');
+        for( var i=0;i<shortstoryShareElems.length;i++ ) {
+            var elem = shortstoryShareElems[i].children[0];
+            var parent = shortstoryShareElems[i];
+            var id = +elem.id.match(/fav-id-(\d+)/)[1];
+            var isChecking = false;
 
-        checkNewEpisodeShortstory.appendChild(checkNewEpisode);
-        parent.insertBefore(checkNewEpisodeShortstory, parent.children[1] );
-    }
+            for( var indexTrack=0;indexTrack<data.animeTrackList.length;indexTrack++ ) {
+                if( data.animeTrackList[indexTrack].id === id ) {
+                    isChecking = data.animeTrackList[indexTrack].status;
+                    break;
+                }
+            }
 
-    bindTrackButton();
-});
+            var checkNewEpisode = document.createElement('img');
+            checkNewEpisode.classList = 'checkNewEpisode';
+            checkNewEpisode.title = 'Отслеживать новые серий';
+            checkNewEpisode.src = isChecking ? imgCheckEpisodeGood : imgCheckEpisode;
+
+            var checkNewEpisodeShortstory = document.createElement('a');
+            checkNewEpisodeShortstory.classList = 'shortstoryShare checkNewEpisodeShortstory';
+            checkNewEpisodeShortstory.dataset.id = id;
+            checkNewEpisodeShortstory.dataset.status = isChecking;
+
+            checkNewEpisodeShortstory.appendChild(checkNewEpisode);
+            parent.insertBefore(checkNewEpisodeShortstory, parent.children[1] );
+        }
+
+        bindTrackButton();
+    });
 
 //tracked anime list page
-if( trackedPageOffset = location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
-    var dleContent = document.getElementById('dle-content');
-    var trackedAnimeOnPage = 10;
-    trackedPageOffset = (trackedPageOffset[1] === "" || +trackedPageOffset[1] === 0) ? 1 : +trackedPageOffset[1];
-    document.addEventListener('openvost-inject',function() {
-        chrome.storage.sync.get(['animeTrackList'],function(data) {
-            var animeListGood = [];
-            for( i in data.animeTrackList ) {
-                if( data.animeTrackList[i].status ) {
-                    animeListGood.push(data.animeTrackList[i].id);
+    if( trackedPageOffset = location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
+        var dleContent = document.getElementById('dle-content');
+        var trackedAnimeOnPage = 10;
+        trackedPageOffset = (trackedPageOffset[1] === "" || +trackedPageOffset[1] === 0) ? 1 : +trackedPageOffset[1];
+        document.addEventListener('openvost-inject',function() {
+            chrome.storage.sync.get(['animeTrackList'],function(data) {
+                var animeListGood = [];
+                for( i in data.animeTrackList ) {
+                    if( data.animeTrackList[i].status ) {
+                        animeListGood.push(data.animeTrackList[i].id);
+                    }
                 }
-            }
 
-            var dleContent = document.getElementById('dle-content');
+                var dleContent = document.getElementById('dle-content');
 
-            function trackInfo(msg) {
-                var mainInfoBadTrackList = document.createElement('div');
-                mainInfoBadTrackList.className = "userinfo";
-                var headInfoBadTrackList = document.createElement('p');
-                headInfoBadTrackList.className = "userinfoHead";
-                headInfoBadTrackList.innerText = "Информация";
-                var bodyInfoBadTrackList = document.createElement('div');
-                bodyInfoBadTrackList.className = "userinfoCenter";
-                bodyInfoBadTrackList.innerText = msg;
+                function trackInfo(msg) {
+                    var mainInfoBadTrackList = document.createElement('div');
+                    mainInfoBadTrackList.className = "userinfo";
+                    var headInfoBadTrackList = document.createElement('p');
+                    headInfoBadTrackList.className = "userinfoHead";
+                    headInfoBadTrackList.innerText = "Информация";
+                    var bodyInfoBadTrackList = document.createElement('div');
+                    bodyInfoBadTrackList.className = "userinfoCenter";
+                    bodyInfoBadTrackList.innerText = msg;
 
-                mainInfoBadTrackList.appendChild(headInfoBadTrackList);
-                mainInfoBadTrackList.appendChild(bodyInfoBadTrackList);
+                    mainInfoBadTrackList.appendChild(headInfoBadTrackList);
+                    mainInfoBadTrackList.appendChild(bodyInfoBadTrackList);
 
-                dleContent.appendChild(mainInfoBadTrackList);
-            }
+                    dleContent.appendChild(mainInfoBadTrackList);
+                }
 
-            if( animeListGood.length === 0 ) {
-                trackInfo("Вы ничего не вносили в свой список отслеживаемых.");
-            }
+                if( animeListGood.length === 0 ) {
+                    trackInfo("Вы ничего не вносили в свой список отслеживаемых.");
+                }
 
-            var startOffset = trackedAnimeOnPage*(trackedPageOffset-1);
-            var endOffset = trackedAnimeOnPage*trackedPageOffset;
-            var animeListPage = animeListGood.reverse().slice(startOffset,endOffset);
+                var startOffset = trackedAnimeOnPage*(trackedPageOffset-1);
+                var endOffset = trackedAnimeOnPage*trackedPageOffset;
+                var animeListPage = animeListGood.reverse().slice(startOffset,endOffset);
 
-            dleContent.dataset.animeList = JSON.stringify( animeListPage );
+                dleContent.dataset.animeList = JSON.stringify( animeListPage );
 
-            var evObj = document.createEvent('Events');
-            evObj.initEvent('openvost-info-animelist', true, true);
-            dleContent.dispatchEvent(evObj);
+                var evObj = document.createEvent('Events');
+                evObj.initEvent('openvost-info-animelist', true, true);
+                dleContent.dispatchEvent(evObj);
+            });
         });
-    });
-    document.addEventListener('openvost-animetracklist-done',function() {
-        bindTrackButton();
-        chrome.storage.sync.get(['animeTrackList'],function(data) {
-            var animeListGood = [];
-            for( i in data.animeTrackList ) {
-                if( data.animeTrackList[i].status ) {
-                    animeListGood.push(data.animeTrackList[i].id);
-                }
-            }
-
-            //page list generate
-            var currentPage = trackedPageOffset;
-            var countPages = Math.ceil(animeListGood.length/trackedAnimeOnPage);
-            var minPage,maxPage;
-            var pageBlock = document.getElementsByClassName('block_4')[0];
-
-            if( countPages > 1 ) {
-
-                if( countPages < 10 ) {
-                    minPage = 1;
-                    maxPage = countPages;
-                } else if( countPages - currentPage  < 4 ) {
-                    minPage = countPages - 8;
-                    maxPage = countPages;
-                } else if( currentPage - 4 < 4 ) {
-                    minPage = 1;
-                    maxPage = minPage + 8;
-                } else {
-                    minPage = currentPage - 4;
-                    maxPage = currentPage + 4;
+        document.addEventListener('openvost-animetracklist-done',function() {
+            bindTrackButton();
+            chrome.storage.sync.get(['animeTrackList'],function(data) {
+                var animeListGood = [];
+                for( i in data.animeTrackList ) {
+                    if( data.animeTrackList[i].status ) {
+                        animeListGood.push(data.animeTrackList[i].id);
+                    }
                 }
 
-                function constructPage(n) {
-                    return n === currentPage ? '<span>' + n + '</span>' : '<a href="/tracked/' + n + '/">' + n + '</a>';
-                }
+                //page list generate
+                var currentPage = trackedPageOffset;
+                var countPages = Math.ceil(animeListGood.length/trackedAnimeOnPage);
+                var minPage,maxPage;
+                var pageBlock = document.getElementsByClassName('block_4')[0];
 
-                if( minPage > 1 ) {
-                    pageBlock.innerHTML += constructPage(1) + "<span class=\"nav_ext\">...</span>";
-                }
+                if( countPages > 1 ) {
 
-                for( var page=minPage;page<=maxPage;page++ ) {
-                    pageBlock.innerHTML += constructPage(page);
-                }
+                    if( countPages < 10 ) {
+                        minPage = 1;
+                        maxPage = countPages;
+                    } else if( countPages - currentPage  < 4 ) {
+                        minPage = countPages - 8;
+                        maxPage = countPages;
+                    } else if( currentPage - 4 < 4 ) {
+                        minPage = 1;
+                        maxPage = minPage + 8;
+                    } else {
+                        minPage = currentPage - 4;
+                        maxPage = currentPage + 4;
+                    }
 
-                if( countPages - currentPage  >= 4 ) {
-                    pageBlock.innerHTML += "<span class=\"nav_ext\">...</span>" + constructPage(countPages);
+                    function constructPage(n) {
+                        return n === currentPage ? '<span>' + n + '</span>' : '<a href="/tracked/' + n + '/">' + n + '</a>';
+                    }
+
+                    if( minPage > 1 ) {
+                        pageBlock.innerHTML += constructPage(1) + "<span class=\"nav_ext\">...</span>";
+                    }
+
+                    for( var page=minPage;page<=maxPage;page++ ) {
+                        pageBlock.innerHTML += constructPage(page);
+                    }
+
+                    if( countPages - currentPage  >= 4 ) {
+                        pageBlock.innerHTML += "<span class=\"nav_ext\">...</span>" + constructPage(countPages);
+                    }
                 }
-            }
+            });
         });
-    });
-}
+    }
 
 //send icon url to element data for anime track list
-document.getElementById('dle-content').dataset.openvostCneGood = imgCheckEpisodeGood;
+    document.getElementById('dle-content').dataset.openvostCneGood = imgCheckEpisodeGood;
 
 //inject track list script
-injectScriptFile( chrome.extension.getURL('/js/inject.js'));
+    injectScriptFile( chrome.extension.getURL('/js/inject.js'));
+});
