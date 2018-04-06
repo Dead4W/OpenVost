@@ -321,7 +321,7 @@ document.addEventListener("DOMContentLoaded", function() {
         trackedAnimeHeadLink.href = "http://animevost.org/tracked";
         trackedAnimeHeadLink.text = "Отслеживаемые (" + countTrackList + ")";
 
-        document.getElementsByClassName('loginLink')[0].insertBefore(trackedAnimeHeadLink, document.getElementsByClassName('loginLinkS')[0]);
+        document.getElementsByClassName('loginLink')[0].insertBefore(trackedAnimeHeadLink, document.getElementsByClassName('loginLinkZ')[0]);
 
         var shortstoryShareElems = document.getElementsByClassName('shortstoryHead');
         for( var i=0;i<shortstoryShareElems.length;i++ ) {
