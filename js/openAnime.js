@@ -1,5 +1,5 @@
 ﻿$('#player2').html('');
-if( $('#player').length ) 
+if( $('#player').length )
 	$('#player').get(0).outerHTML = '<div class="openvost-helperKino"><div id="player"></div></div>';
 
 var st = {
@@ -67,6 +67,8 @@ function open_vost(id,snum,autoPlay,startPlayTime) {
         });
     }
 
+    activePlayer = "player2";
+
     var poster = getPoster(id);
 
     if( player ) {
@@ -127,6 +129,8 @@ function open_vost_kino(id,snum,autoPlay,startPlayTime) {
         });
     }
 
+    activePlayer = "player";
+
     var poster = getPoster(id);
 
     if( kinoPlayer ) {
@@ -172,7 +176,7 @@ function appendContinueDiv(playerName) {
         return;
     }
     let playerUppod = playerName === "player2" ? player : kinoPlayer;
-    $('<div class="continuePlayer">Продолжить с ' + secToPlayerTime(startPlayTime) + '</div>').appendTo($player).css('top',$player.get(0).clientHeight / 2 + 65).on('click',function() {
+    $('<div class="continuePlayer">Продолжить с ' + secToPlayerTime(startPlayTime) + '</div>').appendTo($player).css('top','calc( 50% + 65px )').on('click',function() {
         $player.find('.continuePlayer').remove();
         playerUppod.Set('start',startPlayTime);
         playerUppod.Play();
@@ -264,7 +268,7 @@ var $elems = $("#scrolltwo #items .epizode");
 player = false;
 kinoPlayer = false;
 
-var activePlayer = 'player2';
+var activePlayer = false;
 var goodVideoUrls = {};
 
 $('#player,#player2').on('play',playerActive);
@@ -404,16 +408,14 @@ document.addEventListener('play', function () {
 }, false);
 
 //remember time of episode
-setInterval(function() {
-    var currentPlayer = activePlayer === 'player2' ? player : kinoPlayer;
-    var currentTime = Math.floor(currentPlayer.CurrentTime());
-    if( currentPlayer.getStatus() === 1 && currentPlayer.Duration() > 0 && currentPlayer.Duration() - currentPlayer.CurrentTime() >= 20 && +$.cookie(window.location.pathname + "/time") !== currentTime ) {
-        $.cookie(window.location.pathname + "/time", currentTime, {
-            expires: 365
-        });
-    }
-},3000);
-
-setInterval(function() {
-
-},10000);
+if( activePlayer !== false ) {
+    setInterval(function() {
+        var currentPlayer = activePlayer === 'player2' ? player : kinoPlayer;
+        var currentTime = Math.floor(currentPlayer.CurrentTime());
+        if( currentPlayer.getStatus() === 1 && currentPlayer.Duration() > 0 && currentPlayer.Duration() - currentPlayer.CurrentTime() >= 20 && +$.cookie(window.location.pathname + "/time") !== currentTime ) {
+            $.cookie(window.location.pathname + "/time", currentTime, {
+                expires: 365
+            });
+        }
+    },3000);
+}

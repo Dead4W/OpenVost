@@ -213,7 +213,6 @@ body .shortstory .shortstoryHead h2, body .shortstory .shortstoryHead h1 {
 }
 #kinoplayer #player {
     border: none;
-    line-height: 0!important;
 }
 .openvost-helperKino {
     border: 2px solid #ffa400;
