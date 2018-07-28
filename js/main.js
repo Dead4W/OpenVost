@@ -171,7 +171,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		window.addEventListener("message", function(event) {
 			if( event.type === 'message' ) {
 				if( event.data.type === 'FROM_PAGE_TO_OPENVOST_CHECK_SERVERS' ) {
-					console.log('requests');
 					let id = +event.data.id;
 					if( !id ) {
 						return;
