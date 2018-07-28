@@ -165,113 +165,74 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-//player inject
-    var videolinks = {};
-    if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
-        window.addEventListener("message", function(event) {
-            if( event.type === 'message' ) {
-                if( event.data.type === 'FROM_PAGE_TO_OPENVOST_CHECK_SERVERS' ) {
-                    let id = +event.data.id;
-                    let goodServers = false;
-                    if( !id ) {
-                        return;
-                    }
-                    let badServers = 0;
-                    if( typeof(videolinks[id]) !== undefined ) {
-                        var videolinksEpisode = [
-                            "http://video.aniland.org/720/" + id + ".mp4",
-                            "http://tk.aniland.org/720/" + id + ".mp4",
-                            "http://new.aniland.org/720/" + id + ".mp4",
-                            "http://mp4.aniland.org/720/" + id + ".mp4",
-                            "http://fast.aniland.org/720/" + id + ".mp4",
+	//player inject
+	var videolinks = {};
+	if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
+		window.addEventListener("message", function(event) {
+			if( event.type === 'message' ) {
+				if( event.data.type === 'FROM_PAGE_TO_OPENVOST_CHECK_SERVERS' ) {
+					let id = +event.data.id;
+					let goodServers = false;
+					if( !id ) {
+						return;
+					}
+					let badServers = 0;
+					if( typeof(videolinks[id]) === "undefined" ) {
+						var videolinksEpisode = [
+							"http://video.aniland.org/720/" + id + ".mp4",
+							"http://tk.aniland.org/720/" + id + ".mp4",
+							"http://new.aniland.org/720/" + id + ".mp4",
+							"http://mp4.aniland.org/720/" + id + ".mp4",
+							"http://fast.aniland.org/720/" + id + ".mp4",
 
-                            "http://video.aniland.org/" + id + ".mp4",
-                            "http://tk.aniland.org/" + id + ".mp4",
-                            "http://new.aniland.org/" + id + ".mp4",
-                            "http://fast.aniland.org/" + id + ".mp4",
-                            "http://mp4.aniland.org/" + id + ".mp4"
-                        ];
+							"http://video.aniland.org/" + id + ".mp4",
+							"http://tk.aniland.org/" + id + ".mp4",
+							"http://new.aniland.org/" + id + ".mp4",
+							"http://fast.aniland.org/" + id + ".mp4",
+							"http://mp4.aniland.org/" + id + ".mp4"
+						];
 
-                        let xhr_api = new XMLHttpRequest();
-                        xhr_api.open('POST', 'https://api.animevost.org/v1/videolinks', true);
-                        xhr_api.onload = function() {
-                            if( xhr_api.readyState == 4 && xhr_api.status == 200 ) {
-                                let videolinksApi = JSON.parse(xhr_api.responseText);
-                                for( let videoLinkObjName in videolinksApi ) {
-                                    let videoLinkObj = videolinksApi[videoLinkObjName];
-                                    for( var i =0;i<videoLinkObj.length;i++ ) {
-                                        if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 && !videoLinkObj[i].match(/:hls:/) ) {
-                                            checkUrlServerRequest(videoLinkObj[i]);
-                                        }
-                                    }
-                                }
-                            }
-                        };
-                        xhr_api.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                        xhr_api.send('id=' + id);
-                    } else {
-                        videolinksEpisode = videolinks[id];
-                    }
+						let xhr_api = new XMLHttpRequest();
+						xhr_api.open('POST', 'https://api.animevost.org/v1/videolinks', true);
+						xhr_api.onload = function() {
+							if( xhr_api.readyState == 4 && xhr_api.status == 200 ) {
+								let videolinksApi = JSON.parse(xhr_api.responseText);
+								for( let videoLinkObjName in videolinksApi ) {
+									let videoLinkObj = videolinksApi[videoLinkObjName];
+									for( var i =0;i<videoLinkObj.length;i++ ) {
+										if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 && !videoLinkObj[i].match(/:hls:/) ) {
+											checkUrlServerRequest(videoLinkObj[i]);
+										}
+									}
+								}
+							}
+						};
+						xhr_api.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+						xhr_api.send('id=' + id);
+					} else {
+						videolinksEpisode = videolinks[id];
+					}
 
-                    let checkUrlServerRequest = function(videolink) {
-                        let xhr = new XMLHttpRequest();
-                        xhr.open('HEAD', videolink, true);
-                        xhr.timeout = 15000;
-                        if( !videolink.match(/drek\./) ) {
-                            xhr.setRequestHeader('Cache-Control', 'no-cache');
-                        }
-                        let xhr_error = function() {
-                            badServers++;
-                            if( badServers >= videolinksEpisode.length && !goodServers ) {
-                                if( typeof(event.data.try) == "undefined" ) {
-                                    event.data.try = 0;
-                                }
-                                event.data.try++;
-                                if( event.data.try >= 3 ) {
-                                    console.warn('[OpenVost] error find servers');
-                                    injectScript('badFindServers(' + id + ')');
-                                } else {
-                                    window.postMessage({
-                                        type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
-                                        id: id,
-                                        try: event.data.try
-                                    }, "*");
-                                }
-                            }
-                        };
-                        xhr.onload = function (e) {
-                            if ( xhr.status === 200 ) {
-                                injectScript('addVideoUrl(' + id + ',"' + videolink + '")');
-                                goodServers = true;
-                            } else {
-                                xhr_error();
-                            }
-                        };
-                        xhr.onerror = xhr_error;
-                        xhr.ontimeout = xhr_error;
-                        xhr.send(null);
-                    };
+					for( var i =0;i<videolinksEpisode.length;i++ ) {
+						injectScript('$.ajax({ type: \'HEAD\', url: \'' + videolink + '\', success: function(){ addVideoUrl(' + id + ',\'' + videolink + '\'); } });');
+					}
+				}
+				else if( event.data.type === 'FROM_PAGE_TO_OPENVOST_DOWNLOAD_FILE' ) {
+					chrome.runtime.sendMessage({type: "download_file", options: {
+						type: "basic",
+						url: event.data.url,
+						filename: event.data.filename
+					}});
+				}
+			}
+		});
 
-                    for( var i =0;i<videolinksEpisode.length;i++ ) {
-                        checkUrlServerRequest(videolinksEpisode[i]);
-                    }
-                }
-                else if( event.data.type === 'FROM_PAGE_TO_OPENVOST_DOWNLOAD_FILE' ) {
-                    chrome.runtime.sendMessage({type: "download_file", options: {
-                        type: "basic",
-                        url: event.data.url,
-                        filename: event.data.filename
-                    }});
-                }
-            }
-        });
+		var loadOpenAnime = function() {
+			injectScriptFile( chrome.extension.getURL('js/openAnime.js'));
+		};
 
-        var loadOpenAnime = function() {
-            injectScriptFile( chrome.extension.getURL('js/openAnime.js'));
-        };
-
-        injectScriptFile('http://old.play.aniland.org/HLS.js',loadOpenAnime);
-    }
+		injectScriptFile('http://old.play.aniland.org/HLS.js',loadOpenAnime);
+	}
 
 //counters format
     if( document.getElementsByClassName('shortstoryHead').length ) {
