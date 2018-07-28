@@ -276,13 +276,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 countTrackList++;
             }
         }
-        var trackedAnimeHeadLink = document.createElement('a');
-        trackedAnimeHeadLink.classList = 'loginLinkZ trackedAnimeHead';
-        trackedAnimeHeadLink.title = "Количество отслеживаемых аниме: " + countTrackList;
-        trackedAnimeHeadLink.href = "http://animevost.org/tracked";
-        trackedAnimeHeadLink.text = "Отслеживаемые (" + countTrackList + ")";
+    var trackedAnimeHeadLink = document.createElement('a');
+    trackedAnimeHeadLink.classList = 'loginLinkZ trackedAnimeHead';
+    trackedAnimeHeadLink.title = "Количество отслеживаемых: " + countTrackList;
+    trackedAnimeHeadLink.href = "http://animevost.org/tracked";
+    trackedAnimeHeadLink.style = "padding-right: 37px;";
+    trackedAnimeHeadLink.text = "Отслеживаемые (" + countTrackList + ")";
+	
+	document.getElementsByClassName('loginLinkZ')[0].style = '';
 
-        document.getElementsByClassName('loginLink')[0].insertBefore(trackedAnimeHeadLink, document.getElementsByClassName('loginLinkZ')[0]);
+    document.getElementsByClassName('loginLink')[0].insertBefore(trackedAnimeHeadLink, document.getElementsByClassName('loginExit')[0]);
 
         var shortstoryShareElems = document.getElementsByClassName('shortstoryHead');
         for( var i=0;i<shortstoryShareElems.length;i++ ) {
