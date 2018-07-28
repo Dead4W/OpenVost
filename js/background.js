@@ -108,7 +108,7 @@ function checkAnime() {
 }
 
 chrome.storage.sync.get(['animeTrackList'],function(data) {
-    if( data.animeTrackList.length ) {
+    if( typeof(data.animeTrackList) !== undefined && data.animeTrackList.length ) {
         setInterval(checkAnime,60000);
     }
 });
