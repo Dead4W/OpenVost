@@ -171,12 +171,11 @@ document.addEventListener("DOMContentLoaded", function() {
 		window.addEventListener("message", function(event) {
 			if( event.type === 'message' ) {
 				if( event.data.type === 'FROM_PAGE_TO_OPENVOST_CHECK_SERVERS' ) {
+					console.log('requests');
 					let id = +event.data.id;
-					let goodServers = false;
 					if( !id ) {
 						return;
 					}
-					let badServers = 0;
 					if( typeof(videolinks[id]) === "undefined" ) {
 						var videolinksEpisode = [
 							"http://video.aniland.org/720/" + id + ".mp4",
@@ -201,7 +200,8 @@ document.addEventListener("DOMContentLoaded", function() {
 									let videoLinkObj = videolinksApi[videoLinkObjName];
 									for( var i =0;i<videoLinkObj.length;i++ ) {
 										if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 && !videoLinkObj[i].match(/:hls:/) ) {
-											checkUrlServerRequest(videoLinkObj[i]);
+											let videolink = videoLinkObj[i];
+											injectScript('$.ajax({ type: \'HEAD\', url: \'' + videolink + '\', success: function(){ addVideoUrl(' + id + ',\'' + videolink + '\'); } });');
 										}
 									}
 								}
@@ -214,6 +214,7 @@ document.addEventListener("DOMContentLoaded", function() {
 					}
 
 					for( var i =0;i<videolinksEpisode.length;i++ ) {
+						let videolink = videolinksEpisode[i];
 						injectScript('$.ajax({ type: \'HEAD\', url: \'' + videolink + '\', success: function(){ addVideoUrl(' + id + ',\'' + videolink + '\'); } });');
 					}
 				}
