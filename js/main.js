@@ -418,7 +418,10 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
 //send icon url to element data for anime track list
-    document.getElementById('dle-content').dataset.openvostCneGood = imgCheckEpisodeGood;
+	var contentElement = document.getElementById('dle-content')
+	if( contentElement ) {
+		contentElement.dataset.openvostCneGood = imgCheckEpisodeGood;
+	}
 
 //inject track list script
     injectScriptFile( chrome.extension.getURL('/js/inject.js'));
