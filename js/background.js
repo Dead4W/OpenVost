@@ -58,57 +58,67 @@ chrome.webRequest.onHeadersReceived.addListener(
 
 function checkAnime() {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', "https://api.animevost.org/v1/last?page=1&quantity=20", false);
+    xhr.open('GET', "https://api.animevost.org/v1/last?page=1&quantity=20", true);
+	xhr.onload = function (e) {
+	  if (xhr.readyState === 4) {
+		if (xhr.status !== 200) {
+		  console.error(xhr.statusText);
+		}
+		var result = JSON.parse(xhr.responseText);
+		result.data.reverse();
+
+		chrome.storage.sync.get(['animeTrackList'],function(data) {
+			if( !data.animeTrackList.length ) return;
+
+			for( var i = 0;i<result.data.length;i++ ) {
+				let animeLast = result.data[i];
+
+				let episodes = animeLast.series === "" ? [] : JSON.parse(animeLast.series.replace(/'/g,'"'));
+				let episodesNames = [];
+				for( name in episodes ) {
+					episodesNames.push(name.toString());
+				}
+				episodesNames = episodesNames.join('-').replace(/\s+/g,'');
+
+				let animeTrackIndex = getAnimeTrackindex(data.animeTrackList,animeLast.id);
+				if( animeTrackIndex === undefined ) continue;
+
+				if( animeTrackIndex !== undefined && data.animeTrackList[ animeTrackIndex ].status && episodesNames.hashCode() !== data.animeTrackList[ animeTrackIndex ].hash ) {
+					let notification;
+
+					notification = new Notification("Залит новый эпизод", {
+						body: "На странице " + animeLast.title,
+						icon: animeLast.urlImagePreview.match(/^http/) ? animeLast.urlImagePreview : "http://animevost.org" + animeLast.urlImagePreview,
+					});
+					notification.onclick = function () {
+						window.open("http://animevost.org/" + animeLast.id + "-openvost-redirect.html");
+						this.close();
+					};
+
+					audio.play();
+
+					//update anime episodes hash for monitoring
+					data.animeTrackList[ animeTrackIndex ].hash = episodesNames.hashCode();
+
+					//update position anime in tracked list
+					let currentAnimeInfo = data.animeTrackList[ animeTrackIndex ];
+					data.animeTrackList.remove(data.animeTrackList[ animeTrackIndex ]);
+					data.animeTrackList.push(currentAnimeInfo);
+				}
+			}
+			chrome.storage.sync.set({animeTrackList:data.animeTrackList});
+		});
+	  }
+	};
     xhr.send();
-
-    var result = JSON.parse(xhr.responseText);
-    result.data.reverse();
-
-    chrome.storage.sync.get(['animeTrackList'],function(data) {
-        if( !data.animeTrackList.length ) return;
-
-        for( var i = 0;i<result.data.length;i++ ) {
-            let animeLast = result.data[i];
-
-            let episodes = animeLast.series === "" ? [] : JSON.parse(animeLast.series.replace(/'/g,'"'));
-            let episodesNames = [];
-            for( name in episodes ) {
-                episodesNames.push(name.toString());
-            }
-            episodesNames = episodesNames.join('-').replace(/\s+/g,'');
-
-            let animeTrackIndex = getAnimeTrackindex(data.animeTrackList,animeLast.id);
-            if( animeTrackIndex === undefined ) continue;
-
-            if( animeTrackIndex !== undefined && data.animeTrackList[ animeTrackIndex ].status && episodesNames.hashCode() !== data.animeTrackList[ animeTrackIndex ].hash ) {
-                let notification;
-
-                notification = new Notification("Залит новый эпизод", {
-                    body: "На странице " + animeLast.title,
-                    icon: animeLast.urlImagePreview.match(/^http/) ? animeLast.urlImagePreview : "http://animevost.org" + animeLast.urlImagePreview,
-                });
-                notification.onclick = function () {
-                    window.open("http://animevost.org/" + animeLast.id + "-openvost-redirect.html");
-                    this.close();
-                };
-
-                audio.play();
-
-                //update anime episodes hash for monitoring
-                data.animeTrackList[ animeTrackIndex ].hash = episodesNames.hashCode();
-
-                //update position anime in tracked list
-                let currentAnimeInfo = data.animeTrackList[ animeTrackIndex ];
-                data.animeTrackList.remove(data.animeTrackList[ animeTrackIndex ]);
-                data.animeTrackList.push(currentAnimeInfo);
-            }
-        }
-        chrome.storage.sync.set({animeTrackList:data.animeTrackList});
-    });
 }
 
-chrome.storage.sync.get(['animeTrackList'],function(data) {
-    if( typeof(data.animeTrackList) !== undefined && data.animeTrackList.length ) {
-        setInterval(checkAnime,60000);
-    }
-});
+function checkTrackListThenCheckAnime() {
+	chrome.storage.sync.get(['animeTrackList'],function(data) {
+		if( typeof(data.animeTrackList) !== undefined && data.animeTrackList.length ) {
+			checkAnime();
+		}
+	});
+}
+
+setInterval(checkTrackListThenCheckAnime,60000);
