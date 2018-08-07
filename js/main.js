@@ -1,3 +1,12 @@
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'http://aniland.org/', true);
+xhr.onerror = function() {
+	adblock_xhr = true;
+};
+xhr.send();
+
+var adblock_xhr = false;
+
 document.addEventListener("DOMContentLoaded", function() {
     String.prototype.hashCode = function() {
         var hash = 0, i, chr;
@@ -164,6 +173,8 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
     }
+	
+	
 
 	//player inject
 	var videolinks = {};
@@ -175,6 +186,16 @@ document.addEventListener("DOMContentLoaded", function() {
 					if( !id ) {
 						return;
 					}
+					
+					if( adblock_xhr === true ) {
+						injectScript('addVideoUrl("' + id + '","http://new.aniland.org/720/' + id + '.mp4")');
+						injectScript('addVideoUrl("' + id + '","http://fast.aniland.org/720/' + id + '.mp4")');
+						injectScript('addVideoUrl("' + id + '","http://video.aniland.org/720/' + id + '.mp4")');
+						injectScript('addVideoUrl("' + id + '","http://old.aniland.org/720/' + id + '.mp4")');
+						injectScript('addVideoUrl("' + id + '","http://mp4.aniland.org/720/' + id + '.mp4")');
+						return;
+					}
+					
 					if( typeof(videolinks[id]) === "undefined" ) {
 						var videolinksEpisode = [
 							"http://video.aniland.org/720/" + id + ".mp4",
@@ -189,6 +210,8 @@ document.addEventListener("DOMContentLoaded", function() {
 							"http://fast.aniland.org/" + id + ".mp4",
 							"http://mp4.aniland.org/" + id + ".mp4"
 						];
+						
+						injectScript('openvost_ajax_servers=[];');
 
 						let xhr_api = new XMLHttpRequest();
 						xhr_api.open('POST', 'https://api.animevost.org/v1/videolinks', true);
@@ -200,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function() {
 									for( var i =0;i<videoLinkObj.length;i++ ) {
 										if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 && !videoLinkObj[i].match(/:hls:/) ) {
 											let videolink = videoLinkObj[i];
-											injectScript('$.ajax({ type: \'HEAD\', url: \'' + videolink + '\', success: function(){ addVideoUrl(' + id + ',\'' + videolink + '\'); } });');
+											injectScript('openvost_ajax_servers.push($.ajax({ type: \'HEAD\',crossOrigin: true, url: \'' + videolink + '\', success: function(){ addVideoUrl(' + id + ',\'' + videolink + '\'); } }))');
 										}
 									}
 								}
@@ -214,7 +237,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 					for( var i =0;i<videolinksEpisode.length;i++ ) {
 						let videolink = videolinksEpisode[i];
-						injectScript('$.ajax({ type: \'HEAD\', url: \'' + videolink + '\', success: function(){ addVideoUrl(' + id + ',\'' + videolink + '\'); } });');
+						injectScript('openvost_ajax_servers.push($.ajax({ type: \'HEAD\',crossOrigin: true, url: \'' + videolink + '\', success: function(){ addVideoUrl(' + id + ',\'' + videolink + '\'); } }))');
 					}
 				}
 				else if( event.data.type === 'FROM_PAGE_TO_OPENVOST_DOWNLOAD_FILE' ) {
