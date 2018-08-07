@@ -37,6 +37,7 @@
 			"id": "{de07e1ed-1597-45f9-957d-4edc44399451}"
 		}
    },
+   "id": "ooeealgadmhdnhebkhhbbcmckehpomcj",
    "permissions": [ "downloads", "webRequest", "webRequestBlocking", "tabs", "storage", "notifications", "*://animevost.org/*", "*://api.animevost.org/*", "*://*.aniland.com/*", "*://*.zerocdn.com/*"],
    "web_accessible_resources" : ["js/inject.js", "img/cne.png", "img/cne_good.png", "lib/sound_push.wav", "js/openAnime.js"],
    "version": "1.1.19"
