@@ -271,34 +271,32 @@ document.addEventListener("DOMContentLoaded", function() {
 	}
 
 //counters format
-    if( document.getElementsByClassName('shortstoryHead').length ) {
-        var staticInfoRight = document.getElementsByClassName('staticInfoRight');
-        var counterTitlesRight = [
-            'Просмотров','Комментариев'
-        ];
-        var indexCounters;
-        for( indexCounters=0;indexCounters<staticInfoRight.length;indexCounters++ ) {
-            for( var indexInfoRight=0;indexInfoRight<staticInfoRight[indexCounters].children.length;indexInfoRight++ ) {
-                let elem = staticInfoRight[indexCounters].children[indexInfoRight];
-                if( indexInfoRight === 1 ) elem = elem.children[0];
-                elem.innerText = new Intl.NumberFormat('ru-RU').format(+elem.innerText);
-                elem.title = counterTitlesRight[indexInfoRight] + ': ' + elem.innerText;
-            }
-        }
-        var staticInfoLeft = document.getElementsByClassName('staticInfoLeft');
-        var counterTitlesLeft = [
-            'Многоликий человек-проект','Дата последнего обновления'
-        ];
-        for( indexCounters=0;indexCounters<staticInfoLeft.length;indexCounters++ ) {
-            for( var indexInfoLeft=0;indexInfoLeft<staticInfoLeft[indexCounters].children.length;indexInfoLeft++ ) {
-                let elem = staticInfoLeft[indexCounters].children[indexInfoLeft];
-                if( indexInfoLeft === 0) elem = elem.children[0];
-                elem.title = counterTitlesLeft[indexInfoLeft];
-            }
-        }
+	var classes = [
+		'.staticInfoRightSmotr',
+		'.staticInfoRight span a',
+		'.staticInfoLeftData',
+		'.staticInfoLeft span a',
+	];
+	var titles = [
+		'Просмотров',
+		'Комментариев',
+		'Дата последнего обновления',
+		'Многоликий человек-проект',
+	];
 
-        document.getElementsByClassName('staticInfoLeftData')[0].title = 'Дата последнего обновления';
-    }
+    for( var i = 0;i<classes.length;i++ ) {
+		var elems = document.querySelectorAll(classes[i]);
+		for( var e = 0;e<elems.length;e++ ) {
+			if( i < 2 ) {
+				if( typeof(elems[e]) != "undefined" ) {
+					elems[e].innerHTML = new Intl.NumberFormat('ru-RU').format(+elems[e].innerText);
+					elems[e].title = titles[i] + ': ' + elems[e].innerText;
+				}
+			} else {
+				elems[e].title = titles[i];
+			}
+		}
+	}
 
 //added icon for tracked anime
     storageSync.get(['animeTrackList'],function(data) {
