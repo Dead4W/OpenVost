@@ -1,11 +1,11 @@
+var adblock_xhr = false;
+var adblock_alert = false;
 var xhr = new XMLHttpRequest();
 xhr.open('GET', 'http://aniland.org/', true);
 xhr.onerror = function() {
 	adblock_xhr = true;
 };
 xhr.send();
-
-var adblock_xhr = false;
 
 document.addEventListener("DOMContentLoaded", function() {
     String.prototype.hashCode = function() {
@@ -188,6 +188,17 @@ document.addEventListener("DOMContentLoaded", function() {
 					}
 					
 					if( adblock_xhr === true ) {
+						if( adblock_alert === false ) {
+							adblock_alert = true;
+							var alert = document.createElement('div');
+							alert.innerHTML = '<b>OpenVost error: </b>AdBlock блокирует авто-подбор видео сервера';
+							alert.id = 'openvost_adblock_alert';
+							document.body.appendChild(alert);
+							setTimeout(function() {
+								alert.remove();
+							},6000);
+						}
+						
 						injectScript('addVideoUrl("' + id + '","http://new.aniland.org/720/' + id + '.mp4")');
 						injectScript('addVideoUrl("' + id + '","http://fast.aniland.org/720/' + id + '.mp4")');
 						injectScript('addVideoUrl("' + id + '","http://video.aniland.org/720/' + id + '.mp4")');
