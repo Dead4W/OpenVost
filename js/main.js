@@ -7,6 +7,8 @@ xhr.onerror = function() {
 };
 xhr.send();
 
+var storageSync = chrome.storage.sync;
+
 document.addEventListener("DOMContentLoaded", function() {
     String.prototype.hashCode = function() {
         var hash = 0, i, chr;
@@ -57,10 +59,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 var elem = e.currentTarget;
                 var id = +elem.dataset.id;
                 ShowLoading();
-                chrome.storage.sync.get(['animeTrackList'],function(data) {
+                storageSync.get(['animeTrackList'],function(data) {
                     if(  data.animeTrackList === undefined ) {
                         data.animeTrackList = [];
-                        chrome.storage.sync.set({animeTrackList:data.animeTrackList});
+                        storageSync.set({animeTrackList:data.animeTrackList});
                     }
 
                     var xhr = new XMLHttpRequest();
@@ -99,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 });
                             }
 
-                            chrome.storage.sync.set({"animeTrackList":data.animeTrackList},function() {
+                            storageSync.set({"animeTrackList":data.animeTrackList},function() {
                                 HideLoading();
                                 var countTrackList = 0;
                                 for( var i=0;i<data.animeTrackList.length;i++ ) {
@@ -141,13 +143,13 @@ document.addEventListener("DOMContentLoaded", function() {
     var textBanner = document.getElementsByClassName('banerTopTwo')[0];
     if( textBanner !== undefined ) {
         var hashBanner = textBanner.innerHTML.hashCode();
-        chrome.storage.sync.get(['banner'],function(data) {
+        storageSync.get(['banner'],function(data) {
             if( data.banner === undefined ) {
                 data.banner = {
                     hash: "",
                     isHidden: false
                 };
-                chrome.storage.sync.set({banner:data.banner});
+                storageSync.set({banner:data.banner});
             }
             if( hashBanner === data.banner.hash && data.banner.isHidden ) {
                 textBanner.className += ' openvost-isHidden';
@@ -165,7 +167,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             hash: hashBanner,
                             isHidden: true
                         };
-                        chrome.storage.sync.set({banner:data.banner});
+                        storageSync.set({banner:data.banner});
                     }
                 };
 
@@ -191,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function() {
 						if( adblock_alert === false ) {
 							adblock_alert = true;
 							var alert = document.createElement('div');
-							alert.innerHTML = '<b>OpenVost error: </b>AdBlock блокирует авто-подбор видео сервера';
+							alert.insertAdjacentHTML('afterbegin','<b>OpenVost error: </b>AdBlock блокирует авто-подбор видео сервера');
 							alert.id = 'openvost_adblock_alert';
 							document.body.appendChild(alert);
 							setTimeout(function() {
@@ -299,10 +301,10 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
 //added icon for tracked anime
-    chrome.storage.sync.get(['animeTrackList'],function(data) {
+    storageSync.get(['animeTrackList'],function(data) {
         if( data.animeTrackList === undefined ) {
             data.animeTrackList = [];
-            chrome.storage.sync.set({animeTrackList:data.animeTrackList});
+            storageSync.set({animeTrackList:data.animeTrackList});
         }
         var countTrackList = 0;
         for( var i=0;i<data.animeTrackList.length;i++ ) {
@@ -358,7 +360,7 @@ document.addEventListener("DOMContentLoaded", function() {
         var trackedAnimeOnPage = 10;
         trackedPageOffset = (trackedPageOffset[1] === "" || +trackedPageOffset[1] === 0) ? 1 : +trackedPageOffset[1];
         document.addEventListener('openvost-inject',function() {
-            chrome.storage.sync.get(['animeTrackList'],function(data) {
+            storageSync.get(['animeTrackList'],function(data) {
                 var animeListGood = [];
                 for( i in data.animeTrackList ) {
                     if( data.animeTrackList[i].status ) {
@@ -401,7 +403,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         document.addEventListener('openvost-animetracklist-done',function() {
             bindTrackButton();
-            chrome.storage.sync.get(['animeTrackList'],function(data) {
+            storageSync.get(['animeTrackList'],function(data) {
                 var animeListGood = [];
                 for( i in data.animeTrackList ) {
                     if( data.animeTrackList[i].status ) {
@@ -436,15 +438,15 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
 
                     if( minPage > 1 ) {
-                        pageBlock.innerHTML += constructPage(1) + "<span class=\"nav_ext\">...</span>";
+                        pageBlock.insertAdjacentHTML('beforeend',constructPage(1) + "<span class=\"nav_ext\">...</span>");
                     }
 
                     for( var page=minPage;page<=maxPage;page++ ) {
-                        pageBlock.innerHTML += constructPage(page);
+                        pageBlock.insertAdjacentHTML('beforeend',constructPage(page));
                     }
 
                     if( countPages - currentPage  >= 4 ) {
-                        pageBlock.innerHTML += "<span class=\"nav_ext\">...</span>" + constructPage(countPages);
+                        pageBlock.insertAdjacentHTML('beforeend',"<span class=\"nav_ext\">...</span>" + constructPage(countPages));
                     }
                 }
             });

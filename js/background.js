@@ -9,6 +9,8 @@ String.prototype.hashCode = function() {
     return hash + "_" + this.length;
 };
 
+var storageSync = chrome.storage.sync;
+
 var audio = document.createElement('audio');
 audio.src = chrome.extension.getURL('lib/sound_push.wav');
 audio.volume = 0.13;
@@ -67,7 +69,7 @@ function checkAnime() {
 		var result = JSON.parse(xhr.responseText);
 		result.data.reverse();
 
-		chrome.storage.sync.get(['animeTrackList'],function(data) {
+		storageSync.get(['animeTrackList'],function(data) {
 			if( !data.animeTrackList.length ) return;
 
 			for( var i = 0;i<result.data.length;i++ ) {
@@ -106,7 +108,7 @@ function checkAnime() {
 					data.animeTrackList.push(currentAnimeInfo);
 				}
 			}
-			chrome.storage.sync.set({animeTrackList:data.animeTrackList});
+			storageSync.set({animeTrackList:data.animeTrackList});
 		});
 	  }
 	};
@@ -114,7 +116,7 @@ function checkAnime() {
 }
 
 function checkTrackListThenCheckAnime() {
-	chrome.storage.sync.get(['animeTrackList'],function(data) {
+	storageSync.get(['animeTrackList'],function(data) {
 		if( typeof(data.animeTrackList) !== undefined && data.animeTrackList.length ) {
 			checkAnime();
 		}
