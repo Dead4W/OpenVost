@@ -35,10 +35,12 @@
 	  "persistent": true
    },
   "browser_action": {
+    "default_title": "OpenVost",
+    "default_popup": "popup.html",
     "default_icon": "lib/icon.png"
   },
    "description": "Открывает дополнительные функций на сайте AnimeVost.org",
-   "homepage_url": "https://vk.com/id167819261",
+   "homepage_url": "https://vk.com/openvost",
    "icons": {
       "50": "lib/openvost-50x50.png",
       "100": "lib/openvost-100x100.png",
@@ -50,7 +52,7 @@
 		}
    },
    "id": "ooeealgadmhdnhebkhhbbcmckehpomcj",
-   "permissions": [ "downloads", "webRequest", "webRequestBlocking", "tabs", "storage", "notifications", "*://animevost.org/*", "*://api.animevost.org/*", "*://video.aniland.org/*", "*://ram.aniland.org/*", "*://s2.aniland.org/*", "*://s1.aniland.org/*", "*://s0.aniland.org/*", "*://s.aniland.org/*", "*://mp4.aniland.org/*", "*://fast.aniland.org/*", "*://new.aniland.org/*", "*://tk.aniland.org/*", "*://drek.cdn.zerocdn.com/*"],
+   "permissions": [ "downloads", "webRequest", "webRequestBlocking", "tabs", "storage", "notifications", "*://animevost.org/*", "*://api.animevost.org/*", "*://video.aniland.org/*", "*://ram.aniland.org/*", "*://s2.aniland.org/*", "*://s1.aniland.org/*", "*://s0.aniland.org/*", "*://s.aniland.org/*", "*://mp4.aniland.org/*", "*://fast.aniland.org/*", "*://new.aniland.org/*", "*://tk.aniland.org/*", "*://drek.cdn.zerocdn.com/*", "*://openvost.org/*"],
    "web_accessible_resources" : ["js/inject.js", "img/cne.png", "img/cne_good.png", "lib/sound_push.wav", "js/openAnime.js"],
    "version": "1.1.20"
  }

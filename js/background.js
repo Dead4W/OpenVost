@@ -11,9 +11,39 @@ String.prototype.hashCode = function() {
 
 var storageSync = chrome.storage.sync;
 
+var current_version_hash = 'UDFm0kG2Rn';
+
+var xhr = new XMLHttpRequest();
+xhr.open('GET', 'https://openvost.org/version', true);
+xhr.onload = function() {
+	if ( xhr.readyState === 4 && xhr.status == 200 ) {
+		let saveData;
+		data = JSON.parse(xhr.responseText);
+		if( data.hash !== current_version_hash ) {
+			console.log('new');
+			saveData = {
+				version_new: true,
+				version_new_url: data.url
+			}
+		} else {
+			console.log('old');
+			saveData = {
+				version_new: false,
+				version_new_url: ''
+			}
+		}
+		storageSync.set(saveData);
+	}
+}
+xhr.setRequestHeader('Cache-Control', 'no-cache');
+xhr.send();
+
+
 var audio = document.createElement('audio');
 audio.src = chrome.extension.getURL('lib/sound_push.wav');
 audio.volume = 0.13;
+
+var option_optimization = false;
 
 var videolinks = {};
 chrome.runtime.onMessage.addListener(function(request, sender) {
@@ -70,29 +100,26 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
 		};
 		
         if( typeof(videolinks[id]) !== undefined ) {
-			var videolinksEpisode = [
-				"http://video.aniland.org/720/" + id + ".mp4",
-				"http://tk.aniland.org/720/" + id + ".mp4",
-				"http://new.aniland.org/720/" + id + ".mp4",
-				"http://mp4.aniland.org/720/" + id + ".mp4",
-				"http://fast.aniland.org/720/" + id + ".mp4",
-				"http://s.aniland.org/720/" + id + ".mp4",
-				"http://s0.aniland.org/720/" + id + ".mp4",
-				"http://s1.aniland.org/720/" + id + ".mp4",
-				"http://s2.aniland.org/720/" + id + ".mp4",
-				"http://ram.aniland.org/720/" + id + ".mp4",
-
-				"http://video.aniland.org/" + id + ".mp4",
-				"http://tk.aniland.org/" + id + ".mp4",
-				"http://new.aniland.org/" + id + ".mp4",
-				"http://fast.aniland.org/" + id + ".mp4",
-				"http://mp4.aniland.org/" + id + ".mp4",
-				"http://s.aniland.org/" + id + ".mp4",
-				"http://s0.aniland.org/" + id + ".mp4",
-				"http://s1.aniland.org/" + id + ".mp4",
-				"http://s2.aniland.org/" + id + ".mp4",
-				"http://ram.aniland.org/" + id + ".mp4",
+			var videoservers = [
+				"http://video.aniland.org/{%ID%}.mp4",
+				"http://tk.aniland.org/{%ID%}.mp4",
+				"http://new.aniland.org/{%ID%}.mp4",
+				"http://fast.aniland.org/{%ID%}.mp4",
+				"http://mp4.aniland.org/{%ID%}.mp4",
+				"http://s.aniland.org/{%ID%}.mp4",
+				"http://s0.aniland.org/{%ID%}.mp4",
+				"http://s1.aniland.org/{%ID%}.mp4",
+				"http://s2.aniland.org/{%ID%}.mp4",
+				"http://ram.aniland.org/{%ID%}.mp4",
 			];
+			
+			var videolinksEpisode = [];
+			for( var i =0;i<videoservers.length;i++ ) {
+				videolinksEpisode.push(videoservers[i].replace(/{%ID%}/,id));
+				if( !option_optimization ) {
+					videolinksEpisode.push(videoservers[i].replace(/{%ID%}/,'720/' + id));
+				}
+			}
 			
 			let xhr_api = new XMLHttpRequest();
 			xhr_api.open('POST', 'https://api.animevost.org/v1/videolinks', true);
@@ -100,6 +127,9 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
 				if( xhr_api.readyState == 4 && xhr_api.status == 200 ) {
 					let videolinksApi = JSON.parse(xhr_api.responseText);
 					for( let videoLinkObjName in videolinksApi ) {
+						if( videoLinkObjName === "hdlinks" && option_optimization ) {
+							continue;
+						}
 						let videoLinkObj = videolinksApi[videoLinkObjName];
 						for( var i =0;i<videoLinkObj.length;i++ ) {
 							if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 && !videoLinkObj[i].match(/:hls:/) ) {
@@ -159,7 +189,7 @@ chrome.webRequest.onHeadersReceived.addListener(
 
 function checkAnime() {
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', "https://api.animevost.org/v1/last?page=1&quantity=20", true);
+    xhr.open('GET', "https://api.animevost.org/v1/last?page=1&quantity=" + (option_optimization ? 10 : 20), true);
 	xhr.onload = function (e) {
 	  if (xhr.readyState === 4) {
 		if (xhr.status !== 200) {
@@ -215,11 +245,17 @@ function checkAnime() {
 }
 
 function checkTrackListThenCheckAnime() {
-	storageSync.get(['animeTrackList'],function(data) {
+	storageSync.get(['animeTrackList','option_optimization'],function(data) {
 		if( typeof(data.animeTrackList) !== undefined && data.animeTrackList.length ) {
 			checkAnime();
 		}
+		if( typeof(data.option_optimization) !== "undefined" ) {
+			option_optimization = data.option_optimization;
+		}
+		setTimeout(checkTrackListThenCheckAnime,( option_optimization ? 600000 : 60000 ));
 	});
 }
 
-setInterval(checkTrackListThenCheckAnime,60000);
+chrome.storage.sync.get(['option_optimization'],function(data) {
+	checkTrackListThenCheckAnime();
+});

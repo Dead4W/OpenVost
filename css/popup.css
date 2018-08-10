@@ -1,0 +1,32 @@
+body {
+  min-width: 240px;
+  margin: 0px;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-size: 75%;
+  position: relative;
+}
+hr{
+    border: none;
+	width: 100%;
+    border-top: 1px solid #bababa;
+    margin: 0 0 0.6em 0;
+    padding: 0;
+}
+#optimizationTitle {
+	cursor: pointer;
+}
+h1 {
+    color: #eca73b;
+    background: #fbe5c3;
+    padding: 0.2em 0;
+    margin: 0 0 0.2em 0;
+}
+#version {
+    font-size: 75%;
+    color: gray;
+    margin: 15px 0 2px 5px;
+    display: block;
+}
+a,a:active {
+	color:#234fd4;
+}
