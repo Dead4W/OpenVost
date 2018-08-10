@@ -15,13 +15,110 @@ var audio = document.createElement('audio');
 audio.src = chrome.extension.getURL('lib/sound_push.wav');
 audio.volume = 0.13;
 
-chrome.runtime.onMessage.addListener(function(request) {
+var videolinks = {};
+chrome.runtime.onMessage.addListener(function(request, sender) {
     if (request.type === "download_file") {
         chrome.downloads.download({
             url: request.options.url,
             filename: request.options.filename
         });
-    }
+    } else if(request.type === 'check_videolinks') {
+		let sendResponse = function(response) {
+			if( response.status == 'ok' ) {
+				chrome.tabs.executeScript(sender.tab.id, {code:'injectScript(\'addVideoUrl(' + response.id + ',"' + response.videolink + '")\');'});
+			} else if ( response.status == 'error' ) {
+				chrome.tabs.executeScript(sender.tab.id, {code:'injectScript(\'badFindServers(' + response.id + ')\');'});
+			}
+		}
+		let id = request.options.id;
+		let badServers = 0;
+		let goodServers = false;
+		let checkUrlServerRequest = function(videolink) {
+			let xhr = new XMLHttpRequest();
+			xhr.open('HEAD', videolink, true);
+			xhr.timeout = 15000;
+			if( !videolink.match(/drek\./) ) {
+				xhr.setRequestHeader('Cache-Control', 'no-cache');
+			}
+			let xhr_error = function() {
+				badServers++;
+				if( badServers >= videolinksEpisode.length && !goodServers ) {
+					console.warn('[OpenVost] error find servers');
+					sendResponse({
+						status: "error",
+						id: id,
+						videolink: ""
+					});
+				}
+			};
+			xhr.onload = function (e) {
+				if ( xhr.readyState === 4 && xhr.status == 200 ) {
+					sendResponse({
+						status: "ok",
+						id: id,
+						videolink: videolink
+					});
+					goodServers = true;
+				} else {
+					xhr_error();
+				}
+			};
+			xhr.onerror = xhr_error;
+			xhr.ontimeout = xhr_error;
+						
+			xhr.send(null);
+		};
+		
+        if( typeof(videolinks[id]) !== undefined ) {
+			var videolinksEpisode = [
+				"http://video.aniland.org/720/" + id + ".mp4",
+				"http://tk.aniland.org/720/" + id + ".mp4",
+				"http://new.aniland.org/720/" + id + ".mp4",
+				"http://mp4.aniland.org/720/" + id + ".mp4",
+				"http://fast.aniland.org/720/" + id + ".mp4",
+				"http://s.aniland.org/720/" + id + ".mp4",
+				"http://s0.aniland.org/720/" + id + ".mp4",
+				"http://s1.aniland.org/720/" + id + ".mp4",
+				"http://s2.aniland.org/720/" + id + ".mp4",
+				"http://ram.aniland.org/720/" + id + ".mp4",
+
+				"http://video.aniland.org/" + id + ".mp4",
+				"http://tk.aniland.org/" + id + ".mp4",
+				"http://new.aniland.org/" + id + ".mp4",
+				"http://fast.aniland.org/" + id + ".mp4",
+				"http://mp4.aniland.org/" + id + ".mp4",
+				"http://s.aniland.org/" + id + ".mp4",
+				"http://s0.aniland.org/" + id + ".mp4",
+				"http://s1.aniland.org/" + id + ".mp4",
+				"http://s2.aniland.org/" + id + ".mp4",
+				"http://ram.aniland.org/" + id + ".mp4",
+			];
+			
+			let xhr_api = new XMLHttpRequest();
+			xhr_api.open('POST', 'https://api.animevost.org/v1/videolinks', true);
+			xhr_api.onload = function() {
+				if( xhr_api.readyState == 4 && xhr_api.status == 200 ) {
+					let videolinksApi = JSON.parse(xhr_api.responseText);
+					for( let videoLinkObjName in videolinksApi ) {
+						let videoLinkObj = videolinksApi[videoLinkObjName];
+						for( var i =0;i<videoLinkObj.length;i++ ) {
+							if( videolinksEpisode.indexOf(videoLinkObj[i]) === -1 && !videoLinkObj[i].match(/:hls:/) ) {
+								checkUrlServerRequest(videoLinkObj[i]);
+							}
+						}
+					}
+				}
+			};
+			xhr_api.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			xhr_api.send('id=' + id);
+		} else {
+			videolinksEpisode = videolinks[id];
+		}
+
+		for( var i =0;i<videolinksEpisode.length;i++ ) {
+			checkUrlServerRequest(videolinksEpisode[i]);
+		}
+	}
 });
 
 Array.prototype.remove = function(value) {
@@ -54,7 +151,9 @@ chrome.webRequest.onHeadersReceived.addListener(
         }
         return {responseHeaders: details.responseHeaders};
     },
-    {urls: ["*://*.aniland.org/*", "*://*.zerocdn.com/*"]},
+    {
+		urls: ["*://video.aniland.org/*", "*://ram.aniland.org/*", "*://s2.aniland.org/*", "*://s1.aniland.org/*", "*://s0.aniland.org/*", "*://s.aniland.org/*", "*://mp4.aniland.org/*", "*://fast.aniland.org/*", "*://new.aniland.org/*", "*://tk.aniland.org/*", "*://drek.cdn.zerocdn.com/*"]
+	},
     ["responseHeaders","blocking"]);
 
 
