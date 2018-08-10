@@ -15,7 +15,19 @@
 	  "run_at": "document_start",
 	  "include_globs": ["*openvost_savemoment*"],
       "all_frames": true,
-      "matches": [ "*://*.aniland.org/*", "*://*.zerocdn.com/*" ]
+      "matches": [ 
+		"*://video.aniland.org/*",
+		"*://ram.aniland.org/*",
+		"*://s2.aniland.org/*",
+		"*://s1.aniland.org/*",
+		"*://s0.aniland.org/*",
+		"*://s.aniland.org/*",
+		"*://mp4.aniland.org/*",
+		"*://fast.aniland.org/*",
+		"*://new.aniland.org/*",
+		"*://tk.aniland.org/*",
+		"*://drek.cdn.zerocdn.com/*"
+	  ]
    }
    ],
    "background": {
@@ -28,12 +40,17 @@
    "description": "Открывает дополнительные функций на сайте AnimeVost.org",
    "homepage_url": "https://vk.com/id167819261",
    "icons": {
-      "32": "lib/openvost-50x50.png",
-      "64": "lib/openvost-100x100.png",
+      "50": "lib/openvost-50x50.png",
+      "100": "lib/openvost-100x100.png",
       "128": "lib/openvost-128x128.png"
    },
-   "update_url": "https://clients2.google.com/service/update2/crx",
-   "permissions": [ "downloads", "webRequest", "webRequestBlocking", "tabs", "storage", "notifications", "*://animevost.org/*", "*://api.animevost.org/*", "*://*.aniland.com/*", "*://*.zerocdn.com/*"],
+   "applications": {
+		"gecko": {
+			"id": "{de07e1ed-1597-45f9-957d-4edc44399451}"
+		}
+   },
+   "id": "ooeealgadmhdnhebkhhbbcmckehpomcj",
+   "permissions": [ "downloads", "webRequest", "webRequestBlocking", "tabs", "storage", "notifications", "*://animevost.org/*", "*://api.animevost.org/*", "*://video.aniland.org/*", "*://ram.aniland.org/*", "*://s2.aniland.org/*", "*://s1.aniland.org/*", "*://s0.aniland.org/*", "*://s.aniland.org/*", "*://mp4.aniland.org/*", "*://fast.aniland.org/*", "*://new.aniland.org/*", "*://tk.aniland.org/*", "*://drek.cdn.zerocdn.com/*"],
    "web_accessible_resources" : ["js/inject.js", "img/cne.png", "img/cne_good.png", "lib/sound_push.wav", "js/openAnime.js"],
-   "version": "1.1.18"
+   "version": "1.1.20"
  }
