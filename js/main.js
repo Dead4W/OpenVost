@@ -125,11 +125,11 @@ function Confirm(msg) {
 	return confirm(msg);
 }
 
+var imgCheckEpisode = chrome.extension.getURL('img/cne.png');
+var imgCheckEpisodeGood = chrome.extension.getURL('img/cne_good.png');
+
 document.addEventListener("DOMContentLoaded", function() {
 	injectScript('ajax2 = function(id,snum) {var num=snum -2; if (num<0) {num=0} $(\'.active\').removeClass(\'active\'); $(\'#scrolltwo\').scrollTo("#p" +num , 500, {axis:\'x\'}); $("#p" +snum).addClass(\'active\');}');
-
-    var imgCheckEpisode = chrome.extension.getURL('img/cne.png');
-    var imgCheckEpisodeGood = chrome.extension.getURL('img/cne_good.png');
 
     /* hide info banner */
     var textBanner = document.getElementsByClassName('banerTopTwo')[0];

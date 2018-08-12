@@ -20,13 +20,11 @@ xhr.onload = function() {
 		let saveData;
 		data = JSON.parse(xhr.responseText);
 		if( data.hash !== current_version_hash ) {
-			console.log('new');
 			saveData = {
 				version_new: true,
 				version_new_url: data.url
 			}
 		} else {
-			console.log('old');
 			saveData = {
 				version_new: false,
 				version_new_url: ''
