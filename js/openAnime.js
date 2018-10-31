@@ -11,10 +11,8 @@ var goodVideoUrls = {};
 var goodVideoUrlsQ = {};
 
 function check_videolinks_server(activePlayer,id) {
-	console.log('call check videolinks');
 	var currentPlayer = activePlayer === 'player2' ? player : kinoPlayer;
 	if( goodVideoUrls[currentPlayer.Get('episode_id')] === undefined ) {
-		console.log('send check videolinks');
 		window.postMessage({
 			type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
 			id: id
@@ -242,8 +240,6 @@ function constructPlayerOpenvostData(find,playerUppod) {
     };
 }
 function downloadEpisode(href,name) {
-	console.log(href);
-	console.log(name);
     window.postMessage({
         type: "FROM_PAGE_TO_OPENVOST_DOWNLOAD_FILE",
         url: href,
