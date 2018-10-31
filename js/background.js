@@ -146,6 +146,12 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
 		for( var i =0;i<videolinksEpisode.length;i++ ) {
 			checkUrlServerRequest(videolinksEpisode[i]);
 		}
+	} else if( request.type === 'save_screenshot' ) {
+		console.log(request.options.name);
+        chrome.downloads.download({
+            url: request.options.data,
+            filename: request.options.name
+        });
 	}
 });
 

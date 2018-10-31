@@ -2,7 +2,6 @@ if( location.pathname == '/popup.html' ) {
 	var input = document.getElementsByTagName('input')[0];
 	if( input ) {
 		input.onclick = function(event) {
-			console.log('optimization is ' + event.target.checked );
 			chrome.storage.sync.set({option_optimization:event.target.checked});
 		}
 	}
