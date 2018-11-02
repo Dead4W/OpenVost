@@ -11,7 +11,7 @@ String.prototype.hashCode = function() {
 
 var storageSync = chrome.storage.sync;
 
-var current_version_hash = 'UDFm0kG2Rn';
+var current_version_hash = 'sRjfA32A9';
 
 var xhr = new XMLHttpRequest();
 xhr.open('GET', 'https://openvost.org/version', true);
@@ -147,7 +147,6 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
 			checkUrlServerRequest(videolinksEpisode[i]);
 		}
 	} else if( request.type === 'save_screenshot' ) {
-		console.log(request.options.name);
         chrome.downloads.download({
             url: request.options.data,
             filename: request.options.name
