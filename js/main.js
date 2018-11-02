@@ -125,13 +125,19 @@ function Confirm(msg) {
 	return confirm(msg);
 }
 
+var imgCheckEpisode = chrome.extension.getURL('img/cne.png');
+var imgCheckEpisodeGood = chrome.extension.getURL('img/cne_good.png');
+
 document.addEventListener("DOMContentLoaded", function() {
 	injectScript('ajax2 = function(id,snum) {var num=snum -2; if (num<0) {num=0} $(\'.active\').removeClass(\'active\'); $(\'#scrolltwo\').scrollTo("#p" +num , 500, {axis:\'x\'}); $("#p" +snum).addClass(\'active\');}');
 
-    var imgCheckEpisode = chrome.extension.getURL('img/cne.png');
-    var imgCheckEpisodeGood = chrome.extension.getURL('img/cne_good.png');
-
-    /* hide info banner */
+	chrome.storage.sync.get(['option_optimization'],function(data) {
+		if( typeof(data.option_optimization) !== "undefined" ) {
+			injectScript('openvost_option_optimization = +"' + +data.option_optimization + '"');
+		}
+	});
+	
+    // hide info banner
     var textBanner = document.getElementsByClassName('banerTopTwo')[0];
     if( textBanner !== undefined ) {
         var hashBanner = textBanner.innerHTML.hashCode();
@@ -169,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 	
 	
-//player inject
+	//player inject
     var videolinks = {};
     if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
         window.addEventListener("message", function(event) {
@@ -203,7 +209,7 @@ document.addEventListener("DOMContentLoaded", function() {
         injectScriptFile('http://old.play.aniland.org/HLS.js',loadOpenAnime);
     }
 
-//counters format
+	//counters format
 	var classes = [
 		'.staticInfoRightSmotr',
 		'.staticInfoRight span a',
@@ -231,7 +237,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		}
 	}
 
-//added icon for tracked anime
+	//added icon for tracked anime
     storageSync.get(['animeTrackList'],function(data) {
         if( data.animeTrackList === undefined ) {
             data.animeTrackList = [];
@@ -285,7 +291,7 @@ document.addEventListener("DOMContentLoaded", function() {
         bindTrackButton();
     });
 
-//tracked anime list page
+	//tracked anime list page
     if( trackedPageOffset = location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
         var dleContent = document.getElementById('dle-content');
         var trackedAnimeOnPage = 10;
@@ -384,12 +390,12 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-//send icon url to element data for anime track list
+	//send icon url to element data for anime track list
 	var contentElement = document.getElementById('dle-content')
 	if( contentElement ) {
 		contentElement.dataset.openvostCneGood = imgCheckEpisodeGood;
 	}
 
-//inject track list script
+	//inject track list script
     injectScriptFile( chrome.extension.getURL('/js/inject.js'));
 });

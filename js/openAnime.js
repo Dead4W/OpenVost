@@ -8,18 +8,35 @@ var st = {
 
 var activePlayer = false;
 var goodVideoUrls = {};
+var goodVideoUrlsQ = {};
 
+function check_videolinks_server(activePlayer,id) {
+	var currentPlayer = activePlayer === 'player2' ? player : kinoPlayer;
+	if( goodVideoUrls[currentPlayer.Get('episode_id')] === undefined ) {
+		window.postMessage({
+			type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
+			id: id
+		}, "*");
+	}
+}
 function addVideoUrl(id,url) {
     if( goodVideoUrls[id] === undefined ) {
-        goodVideoUrls[id] = [url];
+        goodVideoUrls[id] = [];
+        goodVideoUrlsQ[id] = {hd:[],sd:[]};
     }
     if( goodVideoUrls[id].indexOf(url) === -1 ) {
         goodVideoUrls[id].push(url);
+		if( url.match('/720/') ) {
+			goodVideoUrlsQ[id].hd.push(url);
+		} else {
+			goodVideoUrlsQ[id].sd.push(url);
+		}
     }
-
+	
     var currentPlayer = activePlayer === "player2" ? player : kinoPlayer;
     if( currentPlayer.Get('episode_id') == id ) {
-        if( currentPlayer.Get('file') == "" ) {
+		$('.playerDownloadPanel').css('display','unset');
+        if( currentPlayer.Get('file') == "" && (currentPlayer.Get('repeat') || openvost_option_optimization ) ) {
             currentPlayer.Play(goodVideoUrls[id].join('|'));
         } else {
             currentPlayer.Set('file',goodVideoUrls[id].join('|'));
@@ -37,9 +54,11 @@ function badFindServers(id) {
 		addVideoUrl(id,"http://video.aniland.org/" + id + ".mp4");
 	}
 }
+/*
 function isFullscreen() {
     return !!(document.webkitFullscreenElement || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement || (document.fullscreenElement !== undefined))
 }
+*/
 function pad(num, length) {
     var s = num+"";
     while (s.length < length) s = "0" + s;
@@ -114,7 +133,11 @@ function open_vost(id,snum,autoPlay,startPlayTime) {
         } else {
             player.Set('file',goodVideoUrls[id].join('|'))
         }
-    }
+    } else {
+		if( !openvost_option_optimization ) {
+			check_videolinks_server(activePlayer,id);
+		}
+	}
 }
 function open_vost_kino(id,snum,autoPlay,startPlayTime) {
     var num = snum - 2;
@@ -169,7 +192,11 @@ function open_vost_kino(id,snum,autoPlay,startPlayTime) {
         } else {
             kinoPlayer.Set('file',goodVideoUrls[id].join('|'))
         }
-    }
+    } else {
+		if( !openvost_option_optimization ) {
+			check_videolinks_server(activePlayer,id);
+		}
+	}
 }
 function appendContinueDiv(playerName) {
     startPlayTime = $.cookie(window.location.pathname + "/time");
@@ -237,6 +264,7 @@ if( dle_news_id ) {
 	//download panel
 	var playerDownloadPanel = document.createElement('div');
 	playerDownloadPanel.className = 'playerDownloadPanel';
+	playerDownloadPanel.style.display = 'none';
 
 	var animPanel = document.createElement('div');
 	animPanel.className = 'animPanel';
@@ -244,15 +272,19 @@ if( dle_news_id ) {
 	var downloadButton1 = document.createElement('a');
 	downloadButton1.className = 'downloadButton';
 	downloadButton1.onclick = function() {
-	    let finder = '.epizode.active';
-        downloadEpisode('http://file.aniland.org/' + parseAjaxFunction($(finder))[0] + '.mp4','openvost anime/' + $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-') + 'anime/' + $(finder).text().replace(' серия','ep') + '-480-sd.mp4');
+        var finder = '.epizode.active';
+		var id = player.Get('episode_id')
+		var link = goodVideoUrlsQ[id].sd[0];
+		downloadEpisode(link,'openvost/anime/' + $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-').replace(/[^a-zA-Z0-9\s-_\.]+/g,'') + '/' + $(finder).text().replace(' серия','ep').replace(/[^a-zA-Z0-9\s-_\.]+/g,'') + '-480-sd.mp4');
     };
 	downloadButton1.innerHTML = 'Скачать 480p';
 	var downloadButton2 = document.createElement('a');
 	downloadButton2.className = 'downloadButton';
 	downloadButton2.onclick = function() {
-        let finder = '.epizode.active';
-        downloadEpisode('http://file.aniland.org/720/' + parseAjaxFunction($(finder))[0] + '.mp4','openvost anime/' + $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-') + 'anime/' + $(finder).text().replace(' серия','ep') + '-720-hd.mp4');
+        var finder = '.epizode.active';
+		var id = player.Get('episode_id')
+		var link = goodVideoUrlsQ[id].hd.length ? goodVideoUrlsQ[id].hd[0] : goodVideoUrlsQ[id].sd[0];
+		downloadEpisode(link,'openvost/anime/' + $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-').replace(/[^a-zA-Z0-9\s-_\.]+/g,'') + '/' + $(finder).text().replace(' серия','ep').replace(/[^a-zA-Z0-9\s-_\.]+/g,'') + '-720-hd.mp4');
     };
 	downloadButton2.innerHTML = 'Скачать 720p (HD)';
 
@@ -332,15 +364,8 @@ $(".functionPanel div").css('width','25%').first().before("<a href=\"#download\"
     if( !player || !player.Duration() ) {
         return false;
     }
-    var name = $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-') + $('.epizode.active').text().replace(' серия','ep');
-    var iframe = document.createElement('iframe');
-    iframe.src = $('#player2 video').get(0).currentSrc + '?openvost_savemoment=' + encodeURI(player.currentTime()) + '&name=' + encodeURI(name);
-    iframe.style.display = 'none';
-    iframe.className = 'openvost-save-moment-iframe';
-    iframe.onload = function() {
-        iframe.remove();
-    };
-    document.body.appendChild(iframe);
+    var name = $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-').replace(/[^a-zA-Z0-9\s-_\.]+/g,'') + $('.epizode.active').text().replace(' серия','ep');
+	window.open($('#player2 video').get(0).currentSrc + '#openvost_savemoment=' + encodeURI(player.currentTime()) + '&name=' + encodeURI(name),'_blank','location=no,height=300,width=300,left=50,top=50,scrollbars=no,status=no');
 });
 
 $('#kinoon').magnificPopup({
@@ -392,22 +417,21 @@ document.addEventListener('end', function () {
         snum = data[1];
 
         playerUppod.Set('repeat',1);
-        handleFunc(id,snum,isFullscreen(),0);
+        handleFunc(id,snum,true,0);
     } else {
         playerUppod.Set('repeat',0);
         playerUppod.Stop();
     }
 }, false);
-document.addEventListener('play', function () {
-    var currentPlayer = activePlayer === 'player2' ? player : kinoPlayer;
-    if( currentPlayer.Get('file') === "" || goodVideoUrls[currentPlayer.Get('episode_id')] === undefined ) {
-        window.postMessage({
-            type: "FROM_PAGE_TO_OPENVOST_CHECK_SERVERS",
-            id: currentPlayer.Get('episode_id')
-        }, "*");
-    }
-    $('.continuePlayer').remove();
-}, false);
+if( openvost_option_optimization ) {
+	document.addEventListener('play', function () {
+		var currentPlayer = activePlayer === 'player2' ? player : kinoPlayer;
+		if( currentPlayer.Get('file') === "" ) {
+			check_videolinks_server(activePlayer,currentPlayer.Get('episode_id'));
+		}
+		$('.continuePlayer').remove();
+	}, false);
+}
 
 //remember time of episode
 if( activePlayer !== false ) {

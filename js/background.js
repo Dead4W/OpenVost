@@ -20,13 +20,11 @@ xhr.onload = function() {
 		let saveData;
 		data = JSON.parse(xhr.responseText);
 		if( data.hash !== current_version_hash ) {
-			console.log('new');
 			saveData = {
 				version_new: true,
 				version_new_url: data.url
 			}
 		} else {
-			console.log('old');
 			saveData = {
 				version_new: false,
 				version_new_url: ''
@@ -148,6 +146,12 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
 		for( var i =0;i<videolinksEpisode.length;i++ ) {
 			checkUrlServerRequest(videolinksEpisode[i]);
 		}
+	} else if( request.type === 'save_screenshot' ) {
+		console.log(request.options.name);
+        chrome.downloads.download({
+            url: request.options.data,
+            filename: request.options.name
+        });
 	}
 });
 
