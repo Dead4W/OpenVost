@@ -1,5 +1,20 @@
 if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
     var imgCheckEpisodeGood = $('#dle-content').attr('data-openvost-cne-good');
+	
+	var entityMap = {
+	  '&': '&amp;',
+	  '<': '&lt;',
+	  '>': '&gt;',
+	  '"': '&quot;',
+	  "'": '&#39;',
+	  '\\': '&#x5C;',
+	};
+
+	function escapeHtml (string) {
+	  return String(string).replace(/[&<>"'\\]/g, function (s) {
+		return entityMap[s];
+	  });
+	}
 
     document.addEventListener('openvost-info-animelist',function() {
         String.prototype.hashCode = function() {
@@ -13,23 +28,23 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
             return hash + "_" + this.length;
         };
         function constructAnimeTrackedElement(animelist,index) {
-            var id = animelist[index];
+            var id = parseInt(animelist[index]);
             $.post('https://api.animevost.org/v1/info',{id:id}).success(function(result) {
                 var title = result.data[0].title;
-                var description = result.data[0].description.replace(/\\/g,'');
-                var year = result.data[0].year;
+                var description = escapeHtml(result.data[0].description.replace(/\\/g,'').replace(/<br ?\\?>/,'%BR%'));
+                var year = parseInt(result.data[0].year);
                 var type = result.data[0].type;
                 var genre = result.data[0].genre;
                 var onlyTitle = title.match(/([^\[]+)/)[1];
                 var poster = result.data[0].urlImagePreview.match(/^http/) ? result.data[0].urlImagePreview : "http://animevost.org" + result.data[0].urlImagePreview;
                 var animePage = "http://animevost.org/" + id + "-openvost-redirect.html";
-                var rating = (result.data[0].rating / result.data[0].votes * 2).toFixed(1);
+                var rating = parseInt(result.data[0].rating / result.data[0].votes * 2).toFixed(1);
 
                 var element = '<div class="shortstory">\n' +
                     '        <div class="shortstoryHead">\n' +
-                    '        <a class="shortstoryShare checkNewEpisodeShortstory" style="right:5px;" data-status="true" data-id="' + id + '"><img class="checkNewEpisode" title="Отслеживать новые серий" src="' + imgCheckEpisodeGood + '"></a>\n' +
+                    '        <a class="shortstoryShare checkNewEpisodeShortstory" style="right:5px;" data-status="true" data-id="' + id + '"><img class="checkNewEpisode" title="Отслеживать новые серий" src="' + escapeHtml(imgCheckEpisodeGood) + '"></a>\n' +
                     '    <h2>\n' +
-                    '    <a href="' + animePage + '">' + title + '</a>\n' +
+                    '    <a href="' + escapeHtml(animePage) + '">' + escapeHtml(title) + '</a>\n' +
                     '    </h2>\n' +
                     '    </div>\n' +
                     '\n' +
@@ -38,15 +53,15 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                     '        <tbody><tr>\n' +
                     '        <td>\n' +
                     '        <div style="width: 240px; float: left; margin-right: 12px;">\n' +
-                    '        <a href="' + animePage + '">\n' +
-                    '        <img class="imgRadius" src="' + poster + '" alt="' + onlyTitle + '" title="' + onlyTitle + '">\n' +
+                    '        <a href="' + escapeHtml(animePage) + '">\n' +
+                    '        <img class="imgRadius" src="' + escapeHtml(poster) + '" alt="' + escapeHtml(onlyTitle) + '" title="' + escapeHtml(onlyTitle) + '">\n' +
                     '        </a>\n' +
                     '        </div>\n' +
                     '\n' +
                     '        <p><strong>Год выхода: </strong>' + year + '</p>\n' +
-                    '    <p><strong>Жанр: </strong>' + genre + '</p>\n' +
-                    '    <p><strong>Тип: </strong>' + type + '</p>\n' +
-                    '<p><strong>Режиссёр: </strong><span itemprop="director"><a href="/xfsearch/' + encodeURIComponent(result.data[0].director) + '/">' + result.data[0].director + '</a></span></p>' +
+                    '    <p><strong>Жанр: </strong>' + escapeHtml(genre) + '</p>\n' +
+                    '    <p><strong>Тип: </strong>' + escapeHtml(type) + '</p>\n' +
+                    '<p><strong>Режиссёр: </strong><span itemprop="director"><a href="/xfsearch/' + escapeHtml(encodeURIComponent(result.data[0].director)) + '/">' + escapeHtml(result.data[0].director) + '</a></span></p>' +
                     '<div><strong>Рейтинг: </strong><div class="ratingIn" id="ratig-layer-' + id + '"><div class="rating">\n' +
                     '<ul class="unit-rating">\n' +
                     '<li class="current-rating" style="width:' + rating*10 + '%;">' + rating + '</li>\n' +
@@ -57,7 +72,7 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                     '<li><a href="#" title="Отлично" class="r5-unit" onclick="doRate(\'5\', \'' + id + '\'); return false;">5</a></li>\n' +
                     '</ul>\n' +
                     '</div></div>&nbsp;<span style="font-size:11px; color:#000;">(<span id="vote-num-id-' + id + '">' + rating + '/10</span>)</span></div>' +
-                    '    <p><strong>Описание: </strong><span itemprop="description">' + description + '</span></p>\n' +
+                    '    <p><strong>Описание: </strong><span itemprop="description">' + description.replace('%BR%','<br/>') + '</span></p>\n' +
                     '    </td>\n' +
                     '    </tr>\n' +
                     '    </tbody>\n' +
@@ -65,7 +80,7 @@ if( location.pathname.match(/\/tracked\/?(\d*)\/?/) ) {
                     '    </div>\n' +
                     '    <div class="shortstoryFuter">\n' +
                     '        <form action="#">\n' +
-                    '        <a href="' + animePage + '">Смотреть</a>\n' +
+                    '        <a href="' + escapeHtml(animePage) + '">Смотреть</a>\n' +
                     '        </form>\n' +
                     '    </div>\n' +
                     '    </div>';

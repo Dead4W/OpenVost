@@ -1,5 +1,20 @@
 var storageSync = chrome.storage.sync;
 
+var entityMap = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+  '\\': '&#x5C;',
+};
+
+function escapeHtml (string) {
+  return String(string).replace(/[&<>"'\\]/g, function (s) {
+    return entityMap[s];
+  });
+}
+
 String.prototype.hashCode = function() {
     var hash = 0, i, chr;
     if (this.length === 0) return hash;
@@ -178,6 +193,13 @@ document.addEventListener("DOMContentLoaded", function() {
 	//player inject
     var videolinks = {};
     if( location.pathname.match(/tip\/[^\/]+\/\d+-/) ) {
+		chrome.runtime.onMessage.addListener( function (data){
+			if( data.action == 'addVideoUrl' ) {
+				injectScript('addVideoUrl("' + parseInt(data.id) +  '","' + escapeHtml(data.videolink) +  '")');
+			} else if ( data.action == 'badFindServers' ) {
+				injectScript('badFindServers("' + parseInt(data.id) + '")');
+			}
+		});
         window.addEventListener("message", function(event) {
             if( event.type === 'message' ) {
                 if( event.data.type === 'FROM_PAGE_TO_OPENVOST_CHECK_SERVERS' ) {
@@ -206,7 +228,7 @@ document.addEventListener("DOMContentLoaded", function() {
             injectScriptFile( chrome.extension.getURL('js/openAnime.js'));
         };
 
-        injectScriptFile('http://old.play.aniland.org/HLS.js',loadOpenAnime);
+        injectScriptFile(chrome.extension.getURL('js/HLS.js'),loadOpenAnime);
     }
 
 	//counters format

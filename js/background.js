@@ -11,7 +11,7 @@ String.prototype.hashCode = function() {
 
 var storageSync = chrome.storage.sync;
 
-var current_version_hash = 'sRjfA32A9';
+var current_version_hash = 'BstT2Bs6';
 
 var xhr = new XMLHttpRequest();
 xhr.open('GET', 'https://openvost.org/version', true);
@@ -53,9 +53,9 @@ chrome.runtime.onMessage.addListener(function(request, sender) {
     } else if(request.type === 'check_videolinks') {
 		let sendResponse = function(response) {
 			if( response.status == 'ok' ) {
-				chrome.tabs.executeScript(sender.tab.id, {code:'injectScript(\'addVideoUrl(' + response.id + ',"' + response.videolink + '")\');'});
+				chrome.tabs.sendMessage(sender.tab.id, {action: "addVideoUrl",id:response.id,videolink:response.videolink});
 			} else if ( response.status == 'error' ) {
-				chrome.tabs.executeScript(sender.tab.id, {code:'injectScript(\'badFindServers(' + response.id + ')\');'});
+				chrome.tabs.sendMessage(sender.tab.id, {action: "badFindServers",id:response.id});
 			}
 		}
 		let id = request.options.id;
