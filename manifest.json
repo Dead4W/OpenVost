@@ -55,5 +55,5 @@
    "id": "ooeealgadmhdnhebkhhbbcmckehpomcj",
    "permissions": [ "downloads", "webRequest", "webRequestBlocking", "tabs", "storage", "notifications", "*://animevost.org/*", "*://api.animevost.org/*", "*://video.aniland.org/*", "*://ram.aniland.org/*", "*://s2.aniland.org/*", "*://s1.aniland.org/*", "*://s0.aniland.org/*", "*://s.aniland.org/*", "*://mp4.aniland.org/*", "*://fast.aniland.org/*", "*://new.aniland.org/*", "*://tk.aniland.org/*", "*://drek.cdn.zerocdn.com/*", "*://openvost.org/*"],
    "web_accessible_resources" : ["js/HLS.js", "js/inject.js", "img/cne.png", "img/cne_good.png", "lib/sound_push.wav", "js/openAnime.js"],
-   "version": "1.1.232"
+   "version": "1.1.234"
  }

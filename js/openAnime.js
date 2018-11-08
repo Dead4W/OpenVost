@@ -425,15 +425,15 @@ document.addEventListener('end', function () {
         playerUppod.Stop();
     }
 }, false);
-if( openvost_option_optimization ) {
-	document.addEventListener('play', function () {
+document.addEventListener('play', function () {
+	if( openvost_option_optimization ) {
 		var currentPlayer = activePlayer === 'player2' ? player : kinoPlayer;
 		if( currentPlayer.Get('file') === "" ) {
 			check_videolinks_server(activePlayer,currentPlayer.Get('episode_id'));
 		}
-		$('.continuePlayer').remove();
-	}, false);
-}
+	}
+	$('.continuePlayer').remove();
+}, false);
 
 //remember time of episode
 if( activePlayer !== false ) {

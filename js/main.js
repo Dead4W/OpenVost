@@ -271,46 +271,48 @@ document.addEventListener("DOMContentLoaded", function() {
                 countTrackList++;
             }
         }
-		var trackedAnimeHeadLink = document.createElement('a');
-		trackedAnimeHeadLink.classList = 'loginLinkZ trackedAnimeHead';
-		trackedAnimeHeadLink.title = "Количество отслеживаемых: " + countTrackList;
-		trackedAnimeHeadLink.href = "http://animevost.org/tracked";
-		trackedAnimeHeadLink.style = "padding-right: 37px;";
-		trackedAnimeHeadLink.text = "Отслеживаемые (" + countTrackList + ")";
-		
-		document.getElementsByClassName('loginLinkZ')[0].style = '';
+		if( document.getElementsByClassName('loginLinkZ').length ) {
+			var trackedAnimeHeadLink = document.createElement('a');
+			trackedAnimeHeadLink.classList = 'loginLinkZ trackedAnimeHead';
+			trackedAnimeHeadLink.title = "Количество отслеживаемых: " + countTrackList;
+			trackedAnimeHeadLink.href = "http://animevost.org/tracked";
+			trackedAnimeHeadLink.style = "padding-right: 37px;";
+			trackedAnimeHeadLink.text = "Отслеживаемые (" + countTrackList + ")";
+			
+			document.getElementsByClassName('loginLinkZ')[0].style = '';
 
-		document.getElementsByClassName('loginLink')[0].insertBefore(trackedAnimeHeadLink, document.getElementsByClassName('loginExit')[0]);
+			document.getElementsByClassName('loginLink')[0].insertBefore(trackedAnimeHeadLink, document.getElementsByClassName('loginExit')[0]);
+			
+			var shortstoryShareElems = document.getElementsByClassName('shortstoryHead');
+			for( var i=0;i<shortstoryShareElems.length;i++ ) {
+				var elem = shortstoryShareElems[i].children[0];
+				var parent = shortstoryShareElems[i];
+				var id = +elem.id.match(/fav-id-(\d+)/)[1];
+				var isChecking = false;
 
-        var shortstoryShareElems = document.getElementsByClassName('shortstoryHead');
-        for( var i=0;i<shortstoryShareElems.length;i++ ) {
-            var elem = shortstoryShareElems[i].children[0];
-            var parent = shortstoryShareElems[i];
-            var id = +elem.id.match(/fav-id-(\d+)/)[1];
-            var isChecking = false;
+				for( var indexTrack=0;indexTrack<data.animeTrackList.length;indexTrack++ ) {
+					if( data.animeTrackList[indexTrack].id === id ) {
+						isChecking = data.animeTrackList[indexTrack].status;
+						break;
+					}
+				}
 
-            for( var indexTrack=0;indexTrack<data.animeTrackList.length;indexTrack++ ) {
-                if( data.animeTrackList[indexTrack].id === id ) {
-                    isChecking = data.animeTrackList[indexTrack].status;
-                    break;
-                }
-            }
+				var checkNewEpisode = document.createElement('img');
+				checkNewEpisode.classList = 'checkNewEpisode';
+				checkNewEpisode.title = 'Отслеживать новые серий';
+				checkNewEpisode.src = isChecking ? imgCheckEpisodeGood : imgCheckEpisode;
 
-            var checkNewEpisode = document.createElement('img');
-            checkNewEpisode.classList = 'checkNewEpisode';
-            checkNewEpisode.title = 'Отслеживать новые серий';
-            checkNewEpisode.src = isChecking ? imgCheckEpisodeGood : imgCheckEpisode;
+				var checkNewEpisodeShortstory = document.createElement('a');
+				checkNewEpisodeShortstory.classList = 'shortstoryShare checkNewEpisodeShortstory';
+				checkNewEpisodeShortstory.dataset.id = id;
+				checkNewEpisodeShortstory.dataset.status = isChecking;
 
-            var checkNewEpisodeShortstory = document.createElement('a');
-            checkNewEpisodeShortstory.classList = 'shortstoryShare checkNewEpisodeShortstory';
-            checkNewEpisodeShortstory.dataset.id = id;
-            checkNewEpisodeShortstory.dataset.status = isChecking;
+				checkNewEpisodeShortstory.appendChild(checkNewEpisode);
+				parent.insertBefore(checkNewEpisodeShortstory, parent.children[1] );
+			}
 
-            checkNewEpisodeShortstory.appendChild(checkNewEpisode);
-            parent.insertBefore(checkNewEpisodeShortstory, parent.children[1] );
-        }
-
-        bindTrackButton();
+			bindTrackButton();
+		}
     });
 
 	//tracked anime list page
