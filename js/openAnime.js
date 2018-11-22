@@ -366,8 +366,7 @@ $(".functionPanel div").css('width','25%').first().before("<a href=\"#download\"
         return false;
     }
     var name = $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-').replace(/[^a-zA-Z0-9\s-_\.]+/g,'') + $('.epizode.active').text().replace(' серия','ep');
-	var i = goodVideoUrls[player.Get('episode_id')].length > 1 ? 1 : 0;
-	window.open(goodVideoUrls[player.Get('episode_id')][i] + '#openvost_savemoment=' + encodeURI(player.currentTime()) + '&name=' + encodeURI(name),'_blank','location=no,height=300,width=300,left=50,top=50,scrollbars=no,status=no');
+	window.open(goodVideoUrls[player.Get('episode_id')][0] + '#openvost_savemoment=' + encodeURI(player.currentTime()) + '&name=' + encodeURI(name),'_blank','location=no,height=300,width=300,left=50,top=50,scrollbars=no,status=no');
 });
 
 $('#kinoon').magnificPopup({
