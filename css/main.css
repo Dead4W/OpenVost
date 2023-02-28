@@ -104,15 +104,39 @@ body .shortstory .shortstoryHead h2, body .shortstory .shortstoryHead h1 {
 .shortstoryFuter {
     min-height: 14px;
 }
-#anime {
+
+.untrack-all {
+    padding: 10px 20px;
+    background: #ffd8a0;
+    position: relative;
+    display: block;
+    border: 1px solid #f4c479;
+    border-radius: 5px;
+    margin-bottom: 16px;
+    font-size: 15px;
+    color: #dc7600;
+    font-weight: 600;
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    list-style-type: none;
+    cursor: pointer;
+}
+
+#openvost_anime {
     z-index: 1;
+    width: 694px;
+    height: 390px;
+    background: #fdcf89;
     border: 1px solid #ffa20f;
     position: relative;
 }
-#anime #player2 {
+#openvost_anime #openvost_player2 {
     border: none;
 }
-#player,#player2 {
+#player,#openvost_player2 {
     position: relative;
 }
 .continuePlayer {
@@ -132,7 +156,7 @@ body .shortstory .shortstoryHead h2, body .shortstory .shortstoryHead h1 {
 #list .series {
     cursor: pointer;
 }
-#anime .playerDownloadPanel {
+#openvost_anime .playerDownloadPanel {
     width: 696px;
     top: 0;
     z-index: 999999999;
