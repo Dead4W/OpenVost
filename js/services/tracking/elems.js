@@ -37,7 +37,7 @@ ServiceTrackingElems = {
             () => {
                 document.querySelectorAll('.skrin-official').forEach((elem) => elem.remove());
             }
-        );
+        ).then();
 
         CONFIG_MANAGER.callbackIf(CONFIG_VAR.SHOW_STORYSHORT_POSTER_SCREENSHORTS,
             async () => {
@@ -46,7 +46,7 @@ ServiceTrackingElems = {
             () => {
                 document.querySelectorAll('.skrin-posters').forEach((elem) => elem.remove());
             }
-        );
+        ).then();
     },
 
     hasUser: function() {

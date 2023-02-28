@@ -2,7 +2,6 @@
  * Browser sync storage
  * data: anime_id => hash
  *
- * @type {{add: (function(*, *): Promise<*>),get: (function(): PromiseLike<{}> | Promise<{}>), save: (function(*): *), existId: (function(*): PromiseLike<boolean> | Promise<boolean>)}}
  */
 ServiceTrackingStorage = {
 
