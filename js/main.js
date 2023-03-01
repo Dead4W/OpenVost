@@ -45,7 +45,7 @@ async function loadModules() {
 document.addEventListener("DOMContentLoaded", function() {
 	const loadModulesPromise = loadModules()
 		.then(() => {
-			injectScriptFile(chrome.runtime.getURL('/js/inject.js'))
+			return injectScriptFile(chrome.runtime.getURL('/js/inject.js'))
 		});
 
 	if (document.querySelector('.login')) {
@@ -76,7 +76,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
 			chrome.runtime.sendMessage({type: "check_videolinks", options: {
 				type: "basic",
-				anime_id: +document.body.innerHTML.match(/var dle_news_id= '(\d+)';/)[1],
 				episode_id: id,
 			}});
 		});
@@ -99,11 +98,11 @@ document.addEventListener("DOMContentLoaded", function() {
 		}
 
 		loadModulesPromise.then(() => {
-			injectScripts();
+			return injectScripts();
 		});
     }
 
 	ServiceTrackingPage.render().then(() => {
-		ServiceTrackingElems.render();
+		return ServiceTrackingElems.render();
 	});
 });

@@ -1,5 +1,14 @@
 const API_URL = 'https://api.animevost.org';
-const WEB_URL = 'https://animevost.org';
+
+async function getLastAnimes(page = 1, count = 20) {
+    return fetch(`${API_URL}/v1/last?page=${page}&quantity=${count}`, {
+        cache: 'no-cache',
+    }).then((result) => {
+        return result.json();
+    }).then((data) => {
+        return data['data'];
+    });
+}
 
 async function getAnimeEpisodes(anime_id) {
     return fetch(`${API_URL}/v1/playlist`, {
@@ -19,27 +28,6 @@ async function getAnimeEpisodes(anime_id) {
 
         return data;
     });
-}
-
-async function getWebVideolinkPart(episode_id) {
-    const episode_response = await fetch(`${WEB_URL}/frame5.php?play=${episode_id}`, {
-        cache: 'no-cache',
-    });
-
-    if (!episode_response.ok) {
-        return false;
-    }
-
-    const raw_episode_response = await episode_response.text();
-
-    const re = new RegExp(`${episode_id}\\.mp4\\?md5=\\w+\\&time=\\d+`);
-    const episode_links = raw_episode_response.replace('&amp;', '&').match(re);
-
-    if (episode_links === null) {
-        return false;
-    }
-
-    return episode_links[0];
 }
 
 async function getAnimeInfo(anime_id) {

@@ -6,7 +6,7 @@
 ServiceTrackingStorage = {
 
     existId: async function(anime_id) {
-        return storageSync.get(['animeTrackList'])
+        return chrome.storage.sync.get(['animeTrackList'])
             .then((data) => {
                 return data.animeTrackList.hasOwnProperty(anime_id);
             });
@@ -15,20 +15,20 @@ ServiceTrackingStorage = {
     getHashById: async function(anime_id) {
         return ServiceTrackingStorage.get(['animeTrackList'])
             .then((data) => {
-                if (!data.animeTrackList.hasOwnProperty(anime_id)) {
+                if (!data.hasOwnProperty(anime_id)) {
                     return false;
                 }
 
-                return data.animeTrackList[anime_id];
+                return data[anime_id];
             });
     },
 
     get: async function () {
-        return storageSync.get(['animeTrackList']).then((data) => {
+        return chrome.storage.sync.get(['animeTrackList']).then((data) => {
             let anime_ids = {};
 
             if(data.animeTrackList === undefined) {
-                storageSync.set({animeTrackList: anime_ids});
+                chrome.storage.sync.set({animeTrackList: anime_ids});
             } else {
                 anime_ids = data.animeTrackList;
             }
@@ -56,6 +56,6 @@ ServiceTrackingStorage = {
     },
 
     set: async function(anime_ids) {
-        return storageSync.set({animeTrackList: anime_ids});
+        return chrome.storage.sync.set({animeTrackList: anime_ids});
     },
 }

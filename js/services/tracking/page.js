@@ -76,21 +76,40 @@ ServiceTrackingPage = {
             }
 
             function constructPage(n) {
-                let link = ServiceTrackingPage.getTrackedLink() + '/' + n;
+                let result;
 
-                return n === currentPage ? '<span>' + n + '</span>' : `<a href="${link}" onclick="location.href='${link}';location.reload(true);">` + n + '</a>';
+                if (n === currentPage) {
+                    result = document.createElement('span');
+                    result.innerText = n.toString();
+                } else {
+                    result = document.createElement('a');
+                    result.href = ServiceTrackingPage.getTrackedLink() + '/' + n;
+                    result.innerText = n.toString();
+                    result.onclick = () => {
+                        location.href = link;
+                        location.reload();
+                    }
+                }
+
+                return result;
             }
 
+            const nav_ext_elem = document.createElement('span');
+            nav_ext_elem.classList.add('nav_ext');
+            nav_ext_elem.innerText = '...';
+
             if( minPage > 1 ) {
-                pageBlock.insertAdjacentHTML('beforeend',constructPage(1) + "<span class=\"nav_ext\">...</span>");
+                pageBlock.appendChild(constructPage(1));
+                pageBlock.appendChild(nav_ext_elem.cloneNode(true));
             }
 
             for(let page=minPage; page<=maxPage; page++) {
-                pageBlock.insertAdjacentHTML('beforeend',constructPage(page));
+                pageBlock.appendChild(constructPage(page));
             }
 
             if(countPages > maxPage) {
-                pageBlock.insertAdjacentHTML('beforeend',"<span class=\"nav_ext\">...</span>" + constructPage(countPages));
+                pageBlock.appendChild(nav_ext_elem.cloneNode(true));
+                pageBlock.appendChild(constructPage(countPages));
             }
         }
     },
@@ -115,7 +134,8 @@ ServiceTrackingPage = {
 
         document.getElementById('dle-content').appendChild(button);
 
-        let interval = setInterval(function () {
+        // dirty code cause something delete my onclick
+        setInterval(function () {
             let elem = document.querySelector('.untrack-all');
 
             if (elem.onclick === null) {

@@ -1,7 +1,7 @@
 {
   "name": "Open AnimeVostorg",
   "short_name": "openvost",
-  "manifest_version": 3,
+  "manifest_version": 2,
   "author": "Ilya Zedgenizov",
   "content_scripts": [
     {
@@ -27,9 +27,12 @@
     }
   ],
   "background": {
-    "service_worker": "js/background.js"
+    "scripts": [
+      "js/background.js"
+    ],
+    "persistent": true
   },
-  "action": {
+  "browser_action": {
     "default_title": "OpenVost",
     "default_popup": "popup.html",
     "default_icon": "lib/icon.png"
@@ -41,13 +44,17 @@
     "100": "lib/openvost-100x100.png",
     "128": "lib/openvost-128x128.png"
   },
+  "applications": {
+    "gecko": {
+      "id": "{de07e1ed-1597-45f9-957d-4edc44399451}"
+    }
+  },
+  "id": "ooeealgadmhdnhebkhhbbcmckehpomcj",
   "permissions": [
     "downloads",
     "tabs",
     "storage",
-    "notifications"
-  ],
-  "host_permissions": [
+    "notifications",
     "*://animevost.org/*",
     "*://api.animevost.org/*",
     "*://video.aniland.org/*",
@@ -56,20 +63,13 @@
     "*://hd.trn.su/*",
     "*://ram.trn.su/*",
     "*://video.animetop.info/*",
-    "*://static.trn.su/*",
     "*://drek.cdn.zerocdn.com/*"
   ],
-  "web_accessible_resources": [{
-    "resources": [
-      "js/*.js",
-      "js/modules/*.js",
-      "img/*.png",
-      "lib/sound_push.wav"
-    ],
-    "matches": [
-      "*://animevost.org/*"
-    ],
-    "extension_ids": []
-  }],
+  "web_accessible_resources": [
+    "js/*.js",
+    "js/modules/*.js",
+    "img/*.png",
+    "lib/sound_push.wav"
+  ],
   "version": "2.0"
 }

@@ -9,7 +9,6 @@ if (typeof(chrome.runtime) !== "undefined" && typeof(window) !== "undefined") {
 }
 
 if (typeof(chrome.storage) !== "undefined") {
-    storageSync = chrome.storage.sync;
     manifestData = chrome.runtime.getManifest();
     current_version = manifestData.version;
 }

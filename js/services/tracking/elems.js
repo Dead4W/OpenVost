@@ -134,10 +134,18 @@ ServiceTrackingElems = {
             const anime_info = anime_infos[anime_id];
             const elem = document.querySelector(`.shortstory[data-id="${anime_id}"]`);
 
-            let rating = (anime_info.rating / anime_info.votes * 2).toFixed(1);
+            let rating = (anime_info['rating'] / anime_info['votes'] * 2).toFixed(1);
             elem.querySelector('.current-rating').innerText = rating;
             elem.querySelector('.current-rating').style.width = rating*10 + '%';
-            elem.querySelector('#vote-num-id-' + anime_id).parentElement.innerHTML = '(<span id="vote-num-id-' + anime_id + '">' + rating + '/10</span>)'
+
+            const vote_num_id = document.createElement('span');
+            vote_num_id.id = "vote-num-id-" + anime_id.toString();
+            vote_num_id.innerText = rating.toString() + '/10';
+
+            const vote_num_parent = elem.querySelector('#vote-num-id-' + anime_id).parentElement;
+
+            vote_num_parent.innerHTML = '';
+            vote_num_parent.appendChild(vote_num_id);
         }
 
         const classes_to_titles_map = {
@@ -156,7 +164,7 @@ ServiceTrackingElems = {
                 let raw_text = elem.innerText.trim();
 
                 if (raw_text === (parseInt(raw_text)).toString()) {
-                    elem.innerHTML = new Intl.NumberFormat('ru-RU').format(+elem.innerText);
+                    elem.innerText = new Intl.NumberFormat('ru-RU').format(+elem.innerText);
                     elem.title = title + ': ' + title.innerText;
                 } else {
                     elem.title = title;

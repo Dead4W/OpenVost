@@ -29,7 +29,7 @@ async function render_options() {
 		input.checked = value;
 		input.dataset.option = name;
 
-		elem.onclick = (e) => {
+		elem.onclick = (_) => {
 			input.checked = !input.checked;
 			CONFIG_MANAGER.set(name, input.checked);
 			return false;
@@ -42,10 +42,10 @@ async function render_options() {
 }
 
 if( location.pathname === '/popup.html' ) {
-	render_options();
+	render_options().then();
 }
 
-var version = document.getElementById('version');
+const version = document.getElementById('version');
 
 version.innerText = 'Версия: ' + current_version;
 

@@ -1,14 +1,15 @@
 importScripts(
-	'/js//modules/consts.js',
+	'/js/modules/consts.js',
 	'/js/modules/helper_functions.js',
 	'/js/modules/api_methods.js',
 	'/js/modules/helper_config.js',
 	'/js/modules/helper_config_observer.js',
+	'/js/services/tracking/storage.js',
 );
 
-const good_videolink_by_episodes = {};
+const good_video_link_by_episodes = {};
 
-WorkerEventHelper.addListener(WORKER_EVENTS.DOWNLOAD_FILE, function(request, sender) {
+WorkerEventHelper.addListener(WORKER_EVENTS.DOWNLOAD_FILE, function(request, _) {
 	chrome.downloads.download({
 		url: request.options.url,
 		filename: request.options.filename
@@ -19,18 +20,17 @@ let latest_job = null;
 
 WorkerEventHelper.addListener(WORKER_EVENTS.CHECK_VIDEOLINKS, async function(request, sender) {
 	let current_job = latest_job = generateString(8);
-	let anime_id = request.options.anime_id;
 	let episode_id = request.options.episode_id;
 
-	if (!good_videolink_by_episodes.hasOwnProperty(episode_id)) {
-		good_videolink_by_episodes[episode_id] = [];
+	if (!good_video_link_by_episodes.hasOwnProperty(episode_id)) {
+		good_video_link_by_episodes[episode_id] = [];
 	}
 
-	if (good_videolink_by_episodes[episode_id].length > 0) {
-		let videolinks = good_videolink_by_episodes[episode_id];
+	if (good_video_link_by_episodes[episode_id].length > 0) {
+		let videolinks = good_video_link_by_episodes[episode_id];
 
 		for (let i = 0; i < videolinks.length; i++) {
-			chrome.tabs.sendMessage(sender.tab.id,
+			chrome.tabs.sendMessage(sender['tab']['id'],
 				{
 					type: WORKER_EVENTS.ADD_VIDEOLINK,
 					id: episode_id,
@@ -64,11 +64,11 @@ WorkerEventHelper.addListener(WORKER_EVENTS.CHECK_VIDEOLINKS, async function(req
 			}
 
 			if (result) {
-				if (good_videolink_by_episodes[episode_id].indexOf(videolink) === -1) {
-					good_videolink_by_episodes[episode_id].push(videolink);
+				if (good_video_link_by_episodes[episode_id].indexOf(videolink) === -1) {
+					good_video_link_by_episodes[episode_id].push(videolink);
 				}
 
-				chrome.tabs.sendMessage(sender.tab.id,
+				chrome.tabs.sendMessage(sender['tab']['id'],
 					{
 						type: WORKER_EVENTS.ADD_VIDEOLINK,
 						id: episode_id,
@@ -82,9 +82,9 @@ WorkerEventHelper.addListener(WORKER_EVENTS.CHECK_VIDEOLINKS, async function(req
 	}
 
 	Promise.all(promises).then(() => {
-		if (good_videolink_by_episodes[episode_id].length === 0) {
+		if (good_video_link_by_episodes[episode_id].length === 0) {
 			console.warn('[OpenVost] error find servers');
-			chrome.tabs.sendMessage(sender.tab.id,
+			chrome.tabs.sendMessage(sender['tab']['id'],
 				{
 					type: WORKER_EVENTS.BAD_FIND_SERVERS,
 					id: episode_id
@@ -94,77 +94,50 @@ WorkerEventHelper.addListener(WORKER_EVENTS.CHECK_VIDEOLINKS, async function(req
 	})
 });
 
+async function checkNewEpisodes() {
+	const animes = await getLastAnimes();
 
-// function getAnimeTrackindex(list,id) {
-//     var i;
-//     for( i in list ) {
-//         if( list[i].id === id ) {
-//             return i;
-//         }
-//     }
-//     return undefined;
-// }
-//
-// async function checkNewEpisodes() {
-// 	const response = fetch("https://api.animevost.org/v1/last?page=1&quantity=20", {
-// 		cache: 'no-cache',
-// 	});
-//
-// 	if (!response.ok) {
-// 		return;
-// 	}
-//
-// 	const result = response.json();
-// 	result.data.reverse();
-//
-// 	const animeTrackList = await storageSync.get(['animeTrackList']);
-//
-// 	if( !animeTrackList.animeTrackList.length ) return;
-//
-// 	for(let i = 0; i<result.data.length; i++) {
-// 		let animeLast = result.data[i];
-//
-// 		let episodes = animeLast.series === "" ? [] : JSON.parse(animeLast.series.replace(/'/g,'"'));
-// 		let episodesNames = [];
-// 		for( name in episodes ) {
-// 			episodesNames.push(name.toString());
-// 		}
-// 		episodesNames = episodesNames.join('-').replace(/\s+/g,'');
-//
-// 		let animeTrackIndex = getAnimeTrackindex(animeTrackList.animeTrackList,animeLast.id);
-// 		if( animeTrackIndex === undefined ) continue;
-//
-// 		if( animeTrackList.animeTrackList[animeTrackIndex].status && episodesNames.hashCode() !== animeTrackList.animeTrackList[ animeTrackIndex ].hash ) {
-// 			let notification;
-//
-// 			notification = new Notification("Залит новый эпизод", {
-// 				body: "На странице " + animeLast.title,
-// 				icon: animeLast.urlImagePreview.match(/^http/) ? animeLast.urlImagePreview : "http://animevost.org" + animeLast.urlImagePreview,
-// 			});
-// 			notification.onclick = function () {
-// 				window.open("https://animevost.org/" + animeLast.id + "-openvost-redirect.html");
-// 				this.close();
-// 			};
-//
-// 			//update anime episodes hash for monitoring
-// 			animeTrackList.animeTrackList[ animeTrackIndex ].hash = episodesNames.hashCode();
-//
-// 			//update position anime in tracked list
-// 			let currentAnimeInfo = animeTrackList.animeTrackList[ animeTrackIndex ];
-// 			animeTrackList.animeTrackList.remove(animeTrackList.animeTrackList[ animeTrackIndex ]);
-// 			animeTrackList.animeTrackList.push(currentAnimeInfo);
-// 		}
-// 	}
-// 	storageSync.set({animeTrackList:animeTrackList.animeTrackList});
-// }
-//
-// function checkStorageThenCheckNewEpisodes() {
-// 	storageSync.get(['animeTrackList'],function(data) {
-// 		if( typeof data.animeTrackList !== 'undefined' && data.animeTrackList.length ) {
-// 			checkNewEpisodes();
-// 		}
-// 	});
-// }
-//
-// checkStorageThenCheckNewEpisodes();
-// setTimeout(checkStorageThenCheckNewEpisodes, 60000);
+	animes.reverse();
+
+	for (let i = 0; i < animes.length; i++) {
+		let anime_data = animes[i];
+		let anime_id = anime_data['id'];
+
+		let old_hash = await ServiceTrackingStorage.getHashById(anime_id);
+
+		if (old_hash === false) {
+			continue;
+		}
+
+		let new_series = anime_data['series'] === "" ? [] : JSON.parse(anime_data['series'].replaceAll('\'', '"'));
+
+		let new_hash = Object.keys(new_series).join('-').replace(/\s+/g,'').hashCode();
+
+		if (old_hash === new_hash) {
+			continue;
+		}
+
+		// important, first save info about new hash
+		ServiceTrackingStorage.add(anime_id, new_hash).then();
+
+		chrome.notifications.create(
+			`openvost_${anime_id}_${new_hash}`,
+			{
+				type: "basic",
+				title: "Залит новый эпизод",
+				message: "На странице " + anime_data['title'].replace(/\[.+/, ''),
+				iconUrl: anime_data['urlImagePreview'],
+			},
+		);
+	}
+}
+
+chrome.notifications.onClicked.addListener(
+	(notificationId) => {
+		[_, anime_id, hash] = notificationId.split('_');
+		chrome.tabs.create({'url': `https://animevost.org/${anime_id}-openvost-redirect.html`}, function(tab) {});
+	}
+);
+
+checkNewEpisodes().then();
+setTimeout(checkNewEpisodes, 1000 * 60 * 5);

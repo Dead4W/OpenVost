@@ -49,7 +49,7 @@ CONFIG_MANAGER = {
     get: async function (name) {
         const value = CONFIG_MANAGER.cast(
             name,
-            (await storageSync.get(name))[name]
+            (await chrome.storage.sync.get(name))[name]
         );
 
         // monitoring editing values for observer
@@ -86,7 +86,7 @@ CONFIG_MANAGER = {
             CONFIG_MANAGER._current_values[name] = value;
         }
 
-        storageSync.set(save_data);
+        chrome.storage.sync.set(save_data);
     },
 
     cast: function (name, value) {

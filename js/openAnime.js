@@ -192,7 +192,7 @@ if( dle_news_id ) {
 		var link = goodVideoUrlsQ[id].sd[0];
 		downloadEpisode(link,'openvost/anime/' + $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-').replace(/[^a-zA-Z0-9\s-_\.]+/g,'') + '/' + $(finder).text().replace(' серия','ep').replace(/[^a-zA-Z0-9\s-_\.]+/g,'') + '-480-sd.mp4');
     };
-	downloadButton1.innerHTML = 'Скачать 480p';
+	downloadButton1.innerText = 'Скачать 480p';
 	var downloadButton2 = document.createElement('a');
 	downloadButton2.className = 'downloadButton';
 	downloadButton2.onclick = function() {
@@ -201,7 +201,7 @@ if( dle_news_id ) {
 		var link = goodVideoUrlsQ[id].hd.length ? goodVideoUrlsQ[id].hd[0] : goodVideoUrlsQ[id].sd[0];
 		downloadEpisode(link,'openvost/anime/' + $('.shortstoryHead h1').text().split(' / ')[1].match(/([^\[]+)/)[1].replace(/\s+/g,'-').replace(/[^a-zA-Z0-9\s-_\.]+/g,'') + '/' + $(finder).text().replace(' серия','ep').replace(/[^a-zA-Z0-9\s-_\.]+/g,'') + '-720-hd.mp4');
     };
-	downloadButton2.innerHTML = 'Скачать 720p (HD)';
+	downloadButton2.innerText = 'Скачать 720p (HD)';
 
 	animPanel.appendChild(downloadButton1);
 	animPanel.appendChild(downloadButton2);

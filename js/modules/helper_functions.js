@@ -78,10 +78,6 @@ WindowEventHelper = {
         WindowEventHelper.listeners[type] = listener;
     },
 
-    removeListeners: function (type) {
-        delete WindowEventHelper.listeners[type];
-    },
-
     _handleMessage: function (event) {
         if (event.type !== 'message') {
             return;
@@ -122,25 +118,10 @@ async function injectScriptFile(file) {
     s.setAttribute('defer', "1");
     document.body.appendChild(s);
 
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve, _) => {
         s.onload = () => {
             resolve();
         };
-    });
-}
-
-function escapeHtml (string) {
-    const replace_map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;',
-        '\\': '&#x5C;',
-    };
-
-    return String(string).replace(/[&<>"'\\]/g, function (s) {
-        return replace_map[s];
     });
 }
 

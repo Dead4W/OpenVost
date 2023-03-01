@@ -2754,6 +2754,15 @@ function Uppod(loadvars) {
         if (document.cancelFullScreen) {
             document.cancelFullScreen()
         } else if (document.exitFullscreen) {
+            try {
+
+            } catch (err) {
+                if (err instanceof TypeError && err.message === 'Document not active') {
+                    // pass
+                } else {
+                    throw err;
+                }
+            }
             document.exitFullscreen()
         } else if (document.cancelFullscreen) {
             document.cancelFullscreen()
