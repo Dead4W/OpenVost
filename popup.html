@@ -1,23 +1,29 @@
 ﻿<!doctype html>
 <html>
-  <head>
-    <title>OpenVost</title>
+<head>
+	<title>OpenVost</title>
 	<link href="css/popup.css" rel="stylesheet" type="text/css"/>
-  </head>
-  <body>
-	<center><h1>OpenVost</h1></center>
-    <div style="padding: 10px 20px">
-		<input type="checkbox"><span id="optimizationTitle" style="top: -2px;position: relative;">Оптимизировать для слабых ПК.</span>
+	<script src="js/modules/consts.js" defer></script>
+	<script src="js/modules/helper_functions.js" defer></script>
+	<script src="js/modules/helper_config.js" defer></script>
+	<script src="js/modules/helper_config_observer.js" defer></script>
+</head>
+<body>
+	<h1 class="text-center">OpenVost</h1>
+	<div id="checkbox-options">
+		<div class="config-option-block example-boolean" style="display: none;">
+			<input type="checkbox"> <span class="config-option-title" data-option="optimize">Шаблон</span>
+		</div>
 	</div>
 	<hr>
 	<div class="links">
 		<ol style="list-style-type: initial;">
-			<li><a target="__blank" href="https://vk.com/openvost">Группа ВКонтакте</a></li>
-			<li><a target="__blank" href="https://github.com/Dead4W/OpenVost">Репозиторий GitHub</a></li>
-			<li><a href="/update.html">Что нового?</a></li>
+		<li><a target="__blank" href="https://vk.com/openvost">Группа ВКонтакте</a></li>
+		<li><a target="__blank" href="https://github.com/Dead4W/OpenVost">Репозиторий GitHub</a></li>
+		<li><a href="/update.html">Что нового?</a></li>
 		</ol>
 	</div>
 	<span id="version"></span>
-	<script src="js/popup.js" type="text/javascript"></script>
-  </body>
+	<script src="js/popup.js" type="text/javascript" defer></script>
+</body>
 </html>
