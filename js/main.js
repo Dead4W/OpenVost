@@ -103,6 +103,19 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
 	ServiceTrackingPage.render().then(() => {
-		return ServiceTrackingElems.render();
+		return ServiceTrackingElems.render(
+			document.querySelectorAll('.shortstory')
+		);
 	});
+
+	if (document.querySelectorAll('.block_2 .block_4 a').length > 1) {
+		let page = 1;
+		let matched_page = location.pathname.match(/page\/(\d+)/)
+
+		if (matched_page) {
+			page = +matched_page[1]
+		}
+
+		animeListLoadingPage.render(page);
+	}
 });

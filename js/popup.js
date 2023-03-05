@@ -45,15 +45,44 @@ if( location.pathname === '/popup.html' ) {
 	render_options().then();
 }
 
-const version = document.getElementById('version');
+const version_elem = document.getElementById('version');
+const change_title_elem = document.querySelector('#changelog-title');
 
-version.innerText = 'Версия: ' + current_version;
+version_elem.innerText = 'Версия: ' + current_version;
 
-// chrome.storage.sync.get(['option_optimization','version_new','version_new_url'],function(data) {
-// 	if( typeof(data.option_optimization) !== "undefined" ) {
-// 		input.checked = data.option_optimization;
-// 	}
-// 	if( typeof(data.version_new) !== "undefined" && data.version_new ) {
-// 		version.innerHTML += ' <a target="__blank" href="' + escapeHtml(data.version_new_url) + '">(Доступна новая версия)</a>';
-// 	}
-// });
+fetch('https://openvost.org/update')
+	.then((response) => {
+		return response.json();
+	}).then((data) => {
+	const version = data['hash'];
+	const version_date = data['date'];
+
+	if (change_title_elem) {
+		if (version !== current_version) {
+			change_title_elem.innerText = `Вы можете обновится до версии ${version} (${version_date})`;
+		} else {
+			change_title_elem.innerText = `Поздравляю, у вас актуальная версия ${version} (${version_date})`;
+		}
+
+		const changelog_options_elem = document.querySelector('#changelog-options');
+
+		for (let i = 0; i < data['changelog'].length; i++) {
+			let changelog_option_title = data['changelog'][i];
+			let changelog_option_title_elem = document.createElement('li');
+
+			changelog_option_title_elem.innerText = changelog_option_title;
+
+			changelog_options_elem.appendChild(changelog_option_title_elem);
+		}
+	}
+
+	if (version !== current_version) {
+		const new_version_elem = document.createElement('a');
+		new_version_elem.style.display = 'block';
+		new_version_elem.target = '_black';
+		new_version_elem.href = data['url'];
+		new_version_elem.innerText = `(Доступна новая версия от ${version_date}`;
+
+		version_elem.appendChild(new_version_elem);
+	}
+});

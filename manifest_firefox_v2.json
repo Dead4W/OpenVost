@@ -17,6 +17,7 @@
         "js/modules/api_methods.js",
         "js/services/tracking/elems.js",
         "js/services/tracking/page.js",
+        "js/services/animeListLoading/page.js",
         "js/services/tracking/storage.js",
         "js/main.js"
       ],
@@ -63,7 +64,8 @@
     "*://hd.trn.su/*",
     "*://ram.trn.su/*",
     "*://video.animetop.info/*",
-    "*://drek.cdn.zerocdn.com/*"
+    "*://drek.cdn.zerocdn.com/*",
+    "https://openvost.org/*"
   ],
   "web_accessible_resources": [
     "js/*.js",

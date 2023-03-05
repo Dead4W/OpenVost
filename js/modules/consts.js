@@ -1,12 +1,12 @@
-OPENVOST_SCRIPT_TYPE = 'UNDEFINED TYPE';
-
-if (typeof(chrome.runtime) !== "undefined" && typeof(window) !== "undefined") {
-    OPENVOST_SCRIPT_TYPE = 'main';
-} else if (typeof(chrome.runtime) === "undefined" && typeof(window) !== "undefined") {
-    OPENVOST_SCRIPT_TYPE = 'inject';
-} else if (typeof(chrome.runtime) !== "undefined" && typeof(window) === "undefined") {
-    OPENVOST_SCRIPT_TYPE = 'background';
-}
+// OPENVOST_SCRIPT_TYPE = 'UNDEFINED TYPE';
+//
+// if (typeof(chrome.runtime) !== "undefined" && typeof(window) !== "undefined") {
+//     OPENVOST_SCRIPT_TYPE = 'main';
+// } else if (typeof(chrome.runtime) === "undefined" && typeof(window) !== "undefined") {
+//     OPENVOST_SCRIPT_TYPE = 'inject';
+// } else if (typeof(chrome.runtime) !== "undefined" && typeof(window) === "undefined") {
+//     OPENVOST_SCRIPT_TYPE = 'background';
+// }
 
 if (typeof(chrome.storage) !== "undefined") {
     manifestData = chrome.runtime.getManifest();

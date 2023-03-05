@@ -149,7 +149,7 @@ function appendContinueDiv(playerName) {
     $('<div class="continuePlayer">Продолжить с ' + secToPlayerTime(startPlayTime) + '</div>').appendTo($player).css('top','calc( 50% + 65px )').on('click',function() {
         $player.find('.continuePlayer').remove();
         getPlayer().Set('start',startPlayTime);
-        getPlayer().Play().catch(() => { /* discard runtime error */ });
+        getPlayer().Play();
     });
 }
 

@@ -125,14 +125,16 @@ async function injectScriptFile(file) {
     });
 }
 
-function isDebug() {
-    let result = false;
+function isElementInViewportOrUpper(el) {
+    const rect = el.getBoundingClientRect();
 
-    try {
-        chrome.management.getSelf()
-    } catch (e) {
-        result = true;
+    if (rect.top < 0) {
+        return true;
     }
 
-    return result;
+    return rect.top - window.innerHeight <= 0;
+}
+
+function lastArr(arr) {
+    return arr[arr.length - 1];
 }

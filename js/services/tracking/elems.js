@@ -3,11 +3,10 @@ ServiceTrackingElems = {
     imgCheckEpisode: chrome.runtime.getURL('img/cne.png'),
     imgCheckEpisodeGood: chrome.runtime.getURL('img/cne_good.png'),
 
-    render: async function() {
-        ServiceTrackingElems.addAnimeIdToStoryHead();
+    render: async function(storyShortElems = null) {
+        ServiceTrackingElems.addAnimeIdToStoryHead(storyShortElems);
 
         const anime_infos = {};
-        const storyShortElems = document.querySelectorAll('.shortstory');
 
         const promises = [];
 
@@ -22,12 +21,12 @@ ServiceTrackingElems = {
 
         await Promise.all(promises);
 
-        ServiceTrackingElems.animeInfoTitlesBuetify(anime_infos).then();
+        ServiceTrackingElems.animeInfoTitlesBuetify(storyShortElems, anime_infos).then();
 
         ServiceTrackingElems.addTrackedButtonToUserHeader().then();
 
-        ServiceTrackingElems.addTrackedButtonToAnimeShortStoryHead().then(() => {
-            ServiceTrackingElems.bindTrackButtons()
+        ServiceTrackingElems.addTrackedButtonToAnimeShortStoryHead(storyShortElems).then(() => {
+            ServiceTrackingElems.bindTrackButtons(storyShortElems)
         });
 
         CONFIG_MANAGER.callbackIf(CONFIG_VAR.SHOW_STORYSHORT_OFFICIAL_SCREENSHORTS,
@@ -79,7 +78,9 @@ ServiceTrackingElems = {
             let posters = [];
 
             for (let j = 0; j < Math.min(3, episodes.length); j++) {
-                posters.push(episodes[j]['preview']);
+                let preview_url = episodes[j]['preview'].replace('http:', 'https:');
+
+                posters.push(preview_url);
             }
 
             if (posters.length > 0) {
@@ -126,73 +127,72 @@ ServiceTrackingElems = {
         }
     },
 
-    animeInfoTitlesBuetify: async function(anime_infos) {
-        const anime_ids = Object.keys(anime_infos);
-
-        for (let i = 0; i < anime_ids.length; i++) {
-            const anime_id = +anime_ids[i];
+    animeInfoTitlesBuetify: async function(storyShortElems, anime_infos) {
+        for (let i = 0; i < storyShortElems.length; i++) {
+            const storyShortElem = storyShortElems[i];
+            const anime_id = +storyShortElem.dataset.id;
             const anime_info = anime_infos[anime_id];
-            const elem = document.querySelector(`.shortstory[data-id="${anime_id}"]`);
 
             let rating = (anime_info['rating'] / anime_info['votes'] * 2).toFixed(1);
-            elem.querySelector('.current-rating').innerText = rating;
-            elem.querySelector('.current-rating').style.width = rating*10 + '%';
+
+            if (storyShortElem.querySelector('.current-rating')) {
+                storyShortElem.querySelector('.current-rating').innerText = rating;
+                storyShortElem.querySelector('.current-rating').style.width = rating*10 + '%';
+            }
 
             const vote_num_id = document.createElement('span');
             vote_num_id.id = "vote-num-id-" + anime_id.toString();
             vote_num_id.innerText = rating.toString() + '/10';
 
-            const vote_num_parent = elem.querySelector('#vote-num-id-' + anime_id).parentElement;
+            const vote_num_parent = storyShortElem.querySelector('#vote-num-id-' + anime_id).parentElement;
 
             vote_num_parent.innerHTML = '';
             vote_num_parent.appendChild(vote_num_id);
-        }
 
-        const classes_to_titles_map = {
-            '.staticInfoRightSmotr': 'Посещений',
-            '.staticInfoRight span a': 'Комментариев',
-            '.staticInfoLeftData': 'Дата последнего обновления',
-            '.staticInfoLeft span a': 'Многоликий человек-проект',
-        };
+            const classes_to_titles_map = {
+                '.staticInfoRightSmotr': 'Посещений',
+                '.staticInfoRight span a': 'Комментариев',
+                '.staticInfoLeftData': 'Дата последнего обновления',
+                '.staticInfoLeft span a': 'Многоликий человек-проект',
+            };
 
-        for (let class_name in classes_to_titles_map) {
-            let title = classes_to_titles_map[class_name];
-            let elems = document.querySelectorAll(class_name);
+            for (let class_name in classes_to_titles_map) {
+                let title = classes_to_titles_map[class_name];
+                let replace_elem = storyShortElem.querySelector(class_name);
 
-            for(let i = 0; i<elems.length; i++) {
-                let elem = elems[i];
-                let raw_text = elem.innerText.trim();
+                if (!replace_elem) {
+                    continue;
+                }
+
+                let raw_text = replace_elem.innerText.trim();
 
                 if (raw_text === (parseInt(raw_text)).toString()) {
-                    elem.innerText = new Intl.NumberFormat('ru-RU').format(+elem.innerText);
-                    elem.title = title + ': ' + title.innerText;
+                    replace_elem.innerText = new Intl.NumberFormat('ru-RU').format(+raw_text);
+                    replace_elem.title = title + ': ' + replace_elem.innerText;
                 } else {
-                    elem.title = title;
+                    replace_elem.title = title;
                 }
             }
         }
     },
 
-    addAnimeIdToStoryHead: function() {
-        let shortstoryShareElems = document.getElementsByClassName('shortstoryHead');
-
-        for(let i=0; i<shortstoryShareElems.length; i++) {
-            let elem = shortstoryShareElems[i];
+    addAnimeIdToStoryHead: function(storyShortElems) {
+        for(let i=0; i<storyShortElems.length; i++) {
+            let storyShortElem = storyShortElems[i];
+            let elem = storyShortElem.querySelector('.shortstoryHead');
             elem.parentElement.dataset.id = elem.children[0].id.match(/fav-id-(\d+)/)[1];
         }
     },
 
-    addTrackedButtonToAnimeShortStoryHead: async function() {
+    addTrackedButtonToAnimeShortStoryHead: async function(storyShortElems) {
         if(!ServiceTrackingElems.hasUser()) {
             return;
         }
 
-        let shortstoryShareElems = document.getElementsByClassName('shortstoryHead');
-
-        for(let i=0; i<shortstoryShareElems.length; i++) {
-            let elem = shortstoryShareElems[i].children[0];
-            let parent = shortstoryShareElems[i];
-            let anime_id = +elem.parentElement.parentElement.dataset.id;
+        for(let i=0; i<storyShortElems.length; i++) {
+            let storyShortElem = storyShortElems[i];
+            let parent = storyShortElem.querySelector('.shortstoryHead');
+            let anime_id = +storyShortElem.dataset.id;
             let isTracked = await ServiceTrackingStorage.existId(anime_id);
 
             let checkNewEpisode = document.createElement('img');
@@ -203,7 +203,6 @@ ServiceTrackingElems = {
             let checkNewEpisodeShortstory = document.createElement('a');
             checkNewEpisodeShortstory.classList.add('shortstoryShare');
             checkNewEpisodeShortstory.classList.add('checkNewEpisodeShortstory');
-            checkNewEpisodeShortstory.dataset.id = anime_id.toString();
             checkNewEpisodeShortstory.dataset.status = isTracked;
 
             checkNewEpisodeShortstory.appendChild(checkNewEpisode);
@@ -242,24 +241,18 @@ ServiceTrackingElems = {
         document.getElementsByClassName('trackedAnimeHead')[0].text = 'Отслеживаемые (' + countTrackList + ')';
     },
 
-    refreshTrackButtonsState: async function () {
-        const buttons = document.querySelectorAll('.checkNewEpisodeShortstory');
+    refreshTrackButtonState: async function (anime_id) {
+        const elem = document.querySelector(`.shortstory[data-id="${anime_id}"] .checkNewEpisodeShortstory`);
 
-        for (let i = 0; i < buttons.length; i++) {
-            const elem = buttons[i];
-            const anime_id = +elem.dataset.id;
+        elem.dataset.status = (await ServiceTrackingStorage.existId(anime_id)).toString();
 
-            elem.dataset.status = (await ServiceTrackingStorage.existId(anime_id)).toString();
-
-            elem.children[0].src = elem.dataset.status === "true" ? ServiceTrackingElems.imgCheckEpisodeGood : ServiceTrackingElems.imgCheckEpisode;
-        }
+        elem.children[0].src = elem.dataset.status === "true" ? ServiceTrackingElems.imgCheckEpisodeGood : ServiceTrackingElems.imgCheckEpisode;
     },
 
-    bindTrackButtons: async function() {
-        const animeTrackIcons = document.getElementsByClassName('checkNewEpisodeShortstory');
-
-        for(let i = 0; i<animeTrackIcons.length; i++) {
-            let anime_tracking_button = animeTrackIcons[i];
+    bindTrackButtons: async function(storyShortElems) {
+        for(let i = 0; i<storyShortElems.length; i++) {
+            let storyShortElem = storyShortElems[i];
+            let anime_tracking_button = storyShortElem.querySelector('.checkNewEpisodeShortstory');
             const anime_tracking_button_image = anime_tracking_button.children[0];
 
             anime_tracking_button_image.onmouseover = function(e) {
@@ -272,8 +265,7 @@ ServiceTrackingElems = {
             };
 
             anime_tracking_button.onclick = async function(e) {
-                let elem = e.currentTarget;
-                let anime_id = +elem.dataset.id;
+                let anime_id = +storyShortElem.dataset.id;
 
                 ShowLoadingEvent();
 
@@ -291,7 +283,7 @@ ServiceTrackingElems = {
                     await ServiceTrackingElems.refreshCounter();
                 }
 
-                await ServiceTrackingElems.refreshTrackButtonsState();
+                await ServiceTrackingElems.refreshTrackButtonState(anime_id);
                 await ServiceTrackingElems.refreshCounter();
 
                 HideLoadingEvent();

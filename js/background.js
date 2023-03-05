@@ -140,4 +140,4 @@ chrome.notifications.onClicked.addListener(
 );
 
 checkNewEpisodes().then();
-setTimeout(checkNewEpisodes, 1000 * 60 * 5);
+setInterval(checkNewEpisodes, 1000 * 60 * 5);

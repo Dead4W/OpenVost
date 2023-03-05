@@ -17,6 +17,7 @@
         "js/modules/api_methods.js",
         "js/services/tracking/elems.js",
         "js/services/tracking/page.js",
+        "js/services/animeListLoading/page.js",
         "js/services/tracking/storage.js",
         "js/main.js"
       ],
@@ -56,6 +57,9 @@
     "*://hd.trn.su/*",
     "*://ram.trn.su/*",
     "*://video.animetop.info/*",
+    "*://drek.cdn.zerocdn.com/*",
+    "*://static.openni.ru/*",
+    "https://openvost.org/*",
     "*://drek.cdn.zerocdn.com/*"
   ],
   "web_accessible_resources": [{
@@ -70,5 +74,5 @@
     ],
     "extension_ids": []
   }],
-  "version": "2.0"
+  "version": "2.0.1"
 }
